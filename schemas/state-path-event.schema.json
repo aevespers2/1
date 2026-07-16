@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aevespers.local/schemas/state-path-event.schema.json",
+  "title": "AEVESPERS State Path Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "event_id",
+    "occurred_at",
+    "actor",
+    "action",
+    "source",
+    "target",
+    "payload_digest",
+    "policy_id",
+    "decision"
+  ],
+  "properties": {
+    "version": {"const": "state.path.event.v1"},
+    "event_id": {"type": "string", "minLength": 16, "maxLength": 128},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {"enum": ["operator", "agent", "gateway", "workflow", "external"]}
+      }
+    },
+    "action": {
+      "enum": [
+        "proposed",
+        "verified",
+        "rejected",
+        "promoted",
+        "published",
+        "received",
+        "superseded",
+        "restored",
+        "approved",
+        "executed",
+        "crossed_repository_boundary"
+      ]
+    },
+    "source": {"$ref": "#/$defs/location"},
+    "target": {"$ref": "#/$defs/location"},
+    "payload_digest": {"type": "string", "pattern": "^(sha256|blake3):[0-9a-f]{64}$"},
+    "policy_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["allowed", "rejected", "paused", "quarantined", "observed"]},
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "reasons"],
+      "properties": {
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "expected_path_id": {"type": "string"},
+        "deviation": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "vtx_envelope_id": {"type": "string"},
+    "receipt_id": {"type": "string"},
+    "previous_event_id": {"type": "string"},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value"],
+      "properties": {
+        "algorithm": {"const": "ed25519"},
+        "key_id": {"type": "string"},
+        "value": {"type": "string", "minLength": 32}
+      }
+    }
+  },
+  "$defs": {
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "partition"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "partition": {"enum": ["working", "reviewed", "canonical", "release", "quarantine", "audit", "recovery", "external"]},
+        "branch": {"type": "string"},
+        "state_id": {"type": "string"}
+      }
+    }
+  }
+}
