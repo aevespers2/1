@@ -1,52 +1,64 @@
 # Release Plan
 
 ## Current Decision
-Status: `BLOCKED`
 
-No work is eligible for release. P0 is only `READY`, `punchlist.md` is absent, no completed Builder evidence is recorded, and reviewed commit `eb39b796e4a754fb80cab61991296d2c7b27b668` has no reported commit-status checks.
+Status: `BLOCKED — CHARTER OR RETIREMENT APPROVAL REQUIRED`
+
+Repository `1` has no approved product purpose or implementation boundary. P0 is explicitly blocked on a user decision, `punchlist.md` is absent, no Builder evidence exists, and candidate head `741ec99378fc22bbdc9aefbd3b19c803a502eb6b` has no verified test, security, documentation, provenance, or repository-specific acceptance bundle.
 
 ## Versioning
-- Scheme: Semantic Versioning.
-- First eligible candidate: `0.0.1-bootstrap`.
-- Do not tag until repository purpose, constraints, verification approach, and a bounded implementation scope are approved and reproducibly verified.
 
-## Candidate Scope
-- Approved repository charter and non-goals.
-- Repository map, supported runtimes, dependency/build/test commands, and trust boundaries.
-- A Builder-ready first task with named files, tests, constraints, and rollback guidance.
-- Minimal CI, security checks, documentation, and provenance reporting.
+- Scheme: Semantic Versioning after an active charter is approved.
+- First possible documentation candidate: `0.0.1-charter.1`.
+- A retirement decision requires no capability release; any archival tag must clearly state that no implementation is supported.
+- No implementation version may be assigned before the repository boundary and first bounded task are approved.
+
+## Release Scope
+
+### Charter candidate
+- Purpose, users, user outcome, inputs/outputs, non-goals, trust/data/security boundaries, repository relationships, license, supported environment, verification strategy, and retirement criteria.
+
+### Retirement outcome
+- README and repository metadata identifying retirement and the repositories that own the displaced work.
 
 ## Selected Completed Work
-None. The coordination and changelog files are administrative setup only.
+
+None. Coordination files and changelog entries do not constitute an approved charter or a verified implementation.
 
 ## Planned Changelog Entries
-- `Added`: repository charter, baseline verification, and first bounded implementation contract.
-- `Security`: documented trust boundary, dependency/secret checks, and least-privilege CI.
-- `Documentation`: reproducible setup, verification, and rollback instructions.
+
+- `Documentation`: approved repository charter or retirement notice.
+- `Security`: trust, data, credential, network, and authority boundaries.
+- `Release`: charter/retirement artifact, checksums, provenance, and approval record.
 
 ## Acceptance Gates
+
 | Gate | Status | Requirement |
 |---|---|---|
-| Task completion | FAIL | P0 marked `DONE` with evidence; P1 defined and completed if included. |
-| Build/tests | NO EVIDENCE | Clean build, lint/static checks, tests, and smoke test pass. |
-| Security | NO EVIDENCE | Dependency, secret, permissions, and supply-chain checks pass. |
-| Documentation | FAIL | Purpose, constraints, setup, usage, and rollback are not yet established. |
-| Provenance | NO EVIDENCE | Commit, commands, tool versions, and artifact hashes recorded. |
-| Approval | PENDING | Explicit approval after all blocking gates pass. |
+| Charter/retirement decision | BLOCKED | Approve a unique non-overlapping charter or retire the repository. |
+| Task completion | FAIL | P0 is `DONE`; `punchlist.md` exists for any active implementation candidate. |
+| Tests/security | NOT APPLICABLE TO CHARTER | Required before any implementation release. |
+| Documentation | FAIL | Approved purpose, boundaries, verification, and retirement criteria are absent. |
+| Provenance | NO EVIDENCE | Decision record, commit, commands, rendered artifact, and hashes are retained. |
+| Approval | PENDING | Explicit approval of the charter/retirement outcome and any release. |
 
 ## Artifact Requirements
-- Charter and baseline report.
-- Test/static/security reports.
-- Checksummed release bundle or source archive.
-- Provenance manifest tied to the release commit.
+
+- Approved charter or retirement notice in source and rendered form.
+- Repository relationship map and decision record.
+- SHA-256 checksum manifest and provenance tied to the candidate commit.
+- For any later implementation: clean build/test/security reports, SBOM where applicable, source/package artifacts, and rollback evidence.
 
 ## Rollback Criteria
-Withdraw the candidate if repository purpose changes materially, verification is non-reproducible, severe security findings remain, or release contents exceed the approved charter. Before the first release, rollback means removing the candidate tag/release and returning to the last reviewed commit.
+
+Withdraw a charter candidate if its purpose overlaps another repository, leaves authority or data boundaries ambiguous, or cannot define a bounded verifiable first task. Roll back any later implementation if it exceeds the approved charter, fails reproducibility or security gates, or produces mismatched artifacts.
 
 ## Unresolved Blockers
-- Repository purpose and acceptance boundaries are not established.
+
+- User approval is required to activate or retire the repository.
 - `punchlist.md` and completed Builder evidence are missing.
-- No CI, test, security, documentation, or provenance evidence is attached to the reviewed commit.
+- No implementation, CI, tests, security checks, documentation artifact, provenance, or rollback evidence exists.
 
 ## Release Log
-- 2026-07-16: Bootstrap candidate evaluated and held `BLOCKED`; no completed work selected.
+
+- 2026-07-16: Reclassified the candidate as a charter-or-retirement decision; no release-ready work selected.
