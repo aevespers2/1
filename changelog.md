@@ -3,20 +3,22 @@
 All notable product, architecture, implementation, release, and deployment changes are recorded here.
 
 ## Unreleased
+
 ### Product
-- Product objectives, MVP scope, priorities, success criteria, and non-goals are maintained by the Product Manager.
+- 2026-07-16 — Placed the repository on a charter hold: approve a unique product purpose or retire/archive it before implementation.
+- 2026-07-16 — Changed P0 from a generic ready baseline to a blocked user decision because no evidence-backed purpose, ownership boundary, or punch list exists.
 
 ### Architecture
-- Architecture decisions and task sequencing are maintained through `taskchain.md`.
+- No architecture or package structure may be inferred before the charter defines users, contracts, trust boundaries, and repository relationships.
 
 ### Implementation
-- Builder work is tracked through `punchlist.md` when adopted, with verification evidence.
+- No implemented capability is claimed; current coordination files are administrative setup only.
 
 ### Release
-- Release readiness, versioning, artifacts, and rollback criteria are tracked in `release.md`.
+- Only a documentation-only bootstrap charter can be considered; implementation release remains blocked.
 
 ### Deployment
-- Deployment environments, health checks, validation, and rollback events are tracked in `deploy.md`.
+- No deployment surface is authorized.
 
 ## Entry Format
 - Date
