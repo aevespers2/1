@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aevespers.local/schemas/token-grant-manifest.schema.json",
+  "title": "Muse Token Grant Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "grant_id", "subject", "repositories", "permissions", "branch_prefixes", "issued_at", "expires_at", "controls", "operator_approval"],
+  "properties": {
+    "version": {"const": "token.grant.manifest.v1"},
+    "grant_id": {"type": "string", "minLength": 16, "maxLength": 128},
+    "subject": {"const": "Muse"},
+    "repositories": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "not": {"const": "aevespers2/1"}}
+    },
+    "permissions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["metadata:read", "contents:read", "contents:write", "pull_requests:read", "pull_requests:write", "checks:read"]
+      }
+    },
+    "branch_prefixes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^muse/proposal/"}
+    },
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "controls": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "vtx_capability_required",
+          "branch_prefix_enforced",
+          "append_only_audit",
+          "revocation_tested",
+          "token_not_in_repo",
+          "token_not_in_agent_memory",
+          "expiry_configured",
+          "repository_allowlist",
+          "redaction_tested",
+          "protected_branch_denial_tested",
+          "trust_core_denial_tested"
+        ]
+      }
+    },
+    "operator_approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_digest", "approved_at", "approval_id"],
+      "properties": {
+        "manifest_digest": {"type": "string", "pattern": "^(sha256|blake3):[0-9a-f]{64}$"},
+        "approved_at": {"type": "string", "format": "date-time"},
+        "approval_id": {"type": "string", "minLength": 12}
+      }
+    },
+    "credential_reference": {
+      "type": "object",
+      "description": "Metadata only; never the secret value.",
+      "additionalProperties": false,
+      "required": ["type", "external_id"],
+      "properties": {
+        "type": {"enum": ["github_app_installation_token", "fine_grained_pat"]},
+        "external_id": {"type": "string", "minLength": 1},
+        "secret_value": false
+      }
+    }
+  }
+}
