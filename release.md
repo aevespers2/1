@@ -4,7 +4,7 @@
 
 Status: `BLOCKED — PRODUCT, ROUTE, SECURITY, AND VERIFICATION APPROVAL REQUIRED`
 
-Repository `1` contains a concrete Partitioned Versioning Trust Core candidate on default-branch head `c8df554eed6fead9dbf19082a64fcf09d15609a3`: architecture/access/audit documents, three transport/state schemas, and a deny-by-default Python policy evaluator. These are observed candidate artifacts, but the product charter, canonical authority model, Repository `0` route contract, key/capability custody, and local-only MVP have not been approved. There is no clean-checkout test, security, provenance, durable-ledger, recovery, artifact, checksum, or rollback evidence.
+Repository `1` contains a concrete Partitioned Versioning Trust Core candidate on reviewed source baseline `c8df554eed6fead9dbf19082a64fcf09d15609a3`: architecture/access/audit documents, three transport/state schemas, and a deny-by-default Python policy evaluator. These are observed candidate artifacts, but the product charter, canonical authority model, Repository `0` route contract, key/capability custody, and local-only MVP have not been approved. There is no clean-checkout test, security, provenance, durable-ledger, recovery, artifact, checksum, or rollback evidence.
 
 Draft PR #1 is not releasable completed work. Its current head `e1b20b4cd59c5ec2aa0b2c92024868ffa6fd500f` adds path auditing and token-assignment safeguards but has no GitHub Actions workflow run. It also conflicts with Repository `0` draft PR #6 by treating `0:working -> 1:quarantine` as the normal path while Repository `0` documents `0:working -> 0:proposal -> 1:quarantine`. Path scores and dispositions remain advisory observability signals and may not authorize canonical transitions.
 
@@ -37,7 +37,7 @@ Draft PR #1 is not releasable completed work. Its current head `e1b20b4cd59c5ec2
 ## Selected Completed Work
 
 - Product direction and Repository `0` relationship are documented as a candidate.
-- Candidate schemas and a deny-by-default policy evaluator are present on the default branch.
+- Candidate schemas and a deny-by-default policy evaluator are present on the reviewed source baseline.
 
 These items remain subject to acceptance review and do not satisfy release gates. Draft PR #1 path-audit and token-safeguard code is unmerged, has no workflow evidence, and is excluded from completed release work.
 
@@ -55,7 +55,7 @@ These items remain subject to acceptance review and do not satisfy release gates
 |---|---|---|
 | Product approval | BLOCKED | Accept, revise, or reject the charter, Repository `1` authority, Repository `0` proposal boundary, partitions, release identity, and local-only MVP. |
 | Route contract | BLOCKED | Select one canonical route model; define whether `0:proposal` is authoritative, local staging, or removed; assign schema/package ownership; add shared positive and negative fixtures. |
-| Artifact inventory | PARTIAL | Bind every default-branch and draft candidate file and claim to immutable commits and reconcile coordination documents. |
+| Artifact inventory | PARTIAL | Bind every reviewed-baseline and draft candidate file and claim to immutable commits and reconcile coordination documents. |
 | Contract validation | NO EVIDENCE | Validate all schemas, canonical serialization, error taxonomy, versioning, and fail-closed behavior with deterministic fixtures. |
 | Policy tests | NO EVIDENCE | Positive and fail-closed cases cover issuer, repository, operation, transition, branch, replay, expiry, approvals, token lifetime, revocation, and protected authorities. |
 | Path audit | BLOCKED | Approve advisory ownership and semantics; test route gaps, digest continuity, false positives/negatives, thresholds, deterministic errors, and interaction with canonical policy. |
