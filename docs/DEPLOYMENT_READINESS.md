@@ -6,6 +6,30 @@ The GitHub repositories are currently public. They are suitable for public schem
 
 **Blocked until all mandatory gates are satisfied.**
 
+## Executable Verification
+
+Run the safeguard suite:
+
+```bash
+python -m pytest -q
+```
+
+Evaluate a readiness evidence bundle:
+
+```bash
+python -m partitioned_versioning.readiness_cli \
+  evidence/token-readiness.example.json \
+  --pretty
+```
+
+Exit codes:
+
+- `0` — every mandatory gate has positive evidence;
+- `2` — one or more gates are missing or failed;
+- any other nonzero status — evaluator or evidence-format error.
+
+The checked-in example is intentionally blocked and CI verifies that it exits with status `2`. Never replace the example with live confidential evidence. Store operational evidence in the private authoritative system and expose only sanitized receipt references where appropriate.
+
 ## Mandatory Gates
 
 - [ ] A private or offline authoritative Repository 1 store exists outside the public GitHub repository.
