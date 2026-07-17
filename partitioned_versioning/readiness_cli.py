@@ -5,15 +5,26 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .readiness import evaluate_readiness
+from .readiness import GateEvidence, MANDATORY_GATES, evaluate_readiness
 
 
-def load_json(path: str) -> dict[str, Any]:
+def load_evidence(path: str) -> dict[str, GateEvidence]:
     with Path(path).open("r", encoding="utf-8") as handle:
-        value = json.load(handle)
+        value: Any = json.load(handle)
     if not isinstance(value, dict):
         raise ValueError("readiness evidence must be a JSON object")
-    return value
+
+    parsed: dict[str, GateEvidence] = {}
+    for gate, record in value.items():
+        if not isinstance(record, dict):
+            raise ValueError(f"evidence for {gate!r} must be an object")
+        parsed[gate] = GateEvidence(
+            passed=bool(record.get("passed", False)),
+            evidence_ref=str(record.get("evidence_ref", "")),
+            recorded_at=str(record.get("recorded_at", "")),
+            notes=str(record.get("notes", "")),
+        )
+    return parsed
 
 
 def main() -> int:
@@ -22,12 +33,13 @@ def main() -> int:
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
-    report = evaluate_readiness(load_json(args.evidence))
+    report = evaluate_readiness(load_evidence(args.evidence))
+    verified = [gate for gate in MANDATORY_GATES if gate not in report.missing and gate not in report.failed]
     payload = {
         "ready": report.ready,
         "missing": list(report.missing),
         "failed": list(report.failed),
-        "verified": list(report.verified),
+        "verified": verified,
     }
     print(json.dumps(payload, indent=2 if args.pretty else None, sort_keys=True))
     return 0 if report.ready else 2
