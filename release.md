@@ -6,6 +6,8 @@ Status: `BLOCKED — PRODUCT, ROUTE, SECURITY, AND VERIFICATION APPROVAL REQUIRE
 
 Repository `1` contains a concrete Partitioned Versioning Trust Core candidate on reviewed source baseline `c8df554eed6fead9dbf19082a64fcf09d15609a3`: architecture/access/audit documents, three transport/state schemas, and a deny-by-default Python policy evaluator. These are observed candidate artifacts, but the product charter, canonical authority model, Repository `0` route contract, key/capability custody, and local-only MVP have not been approved. There is no clean-checkout test, security, provenance, durable-ledger, recovery, artifact, checksum, or rollback evidence.
 
+A documentation milestone now adds a Pages-ready overview, project guide, contract and state-machine design, developer onboarding, and local operations/recovery playbook. These materials clarify required behavior and evidence but do not validate or release any capability.
+
 Draft PR #1 is not releasable completed work. Its current head `e1b20b4cd59c5ec2aa0b2c92024868ffa6fd500f` adds path auditing and token-assignment safeguards but has no GitHub Actions workflow run. It also conflicts with Repository `0` draft PR #6 by treating `0:working -> 1:quarantine` as the normal path while Repository `0` documents `0:working -> 0:proposal -> 1:quarantine`. Path scores and dispositions remain advisory observability signals and may not authorize canonical transitions.
 
 ## Versioning
@@ -38,6 +40,7 @@ Draft PR #1 is not releasable completed work. Its current head `e1b20b4cd59c5ec2
 
 - Product direction and Repository `0` relationship are documented as a candidate.
 - Candidate schemas and a deny-by-default policy evaluator are present on the reviewed source baseline.
+- GitHub Pages-ready project navigation, architecture diagrams, contract design, onboarding, operating evidence, recovery simulation, incident, and rollback requirements are documented.
 
 These items remain subject to acceptance review and do not satisfy release gates. Draft PR #1 path-audit and token-safeguard code is unmerged, has no workflow evidence, and is excluded from completed release work.
 
@@ -62,19 +65,20 @@ These items remain subject to acceptance review and do not satisfy release gates
 | Ledger/recovery | NOT IMPLEMENTED | Append-only receipt chain, checkpoint verification, tamper detection, and restoration simulation pass. |
 | Security | NO EVIDENCE | Threat model, trust/key lifecycle, credential isolation, private/offline authoritative-store design, dependency review, unsafe-boundary checks, and abuse cases pass. |
 | Reproducibility/CI | FAIL | Clean checkout reproduces complete tests and artifacts at the exact candidate commit; draft PR #1 currently has no workflow run. |
-| Documentation | PARTIAL | Architecture and access concepts exist; deployment-readiness gates, operator procedures, recovery, public-mirror limitations, and claims remain unverified. |
+| Documentation | PARTIAL | Project, architecture, contract, onboarding, operations, recovery, incident, rollback, and Pages material exist; claims, commands, public-mirror limits, and operator procedures still require exact-head verification and review. |
 | Provenance | NO EVIDENCE | Commit, commands, outputs, timestamps, environment, artifact hashes, review decisions, and approval record are retained. |
 | Deployment | NOT AUTHORIZED | No deployment, token issuance, gateway activation, or remote write is part of this candidate. |
 | Approval | PENDING | Release approval is recorded only after every blocking gate passes. |
 
 ## Artifact Requirements
 
-- Source and rendered architecture, route-contract, access-control, and threat-model documentation.
+- Source and rendered architecture, route-contract, access-control, threat-model, onboarding, and operations documentation.
 - Machine-readable schemas and deterministic shared fixture corpus with Repository `0`.
 - Policy and advisory path-audit test reports, including negative and calibration fixtures.
 - Test, security, dependency, clean-checkout, documentation, and reproducibility reports.
 - Receipt-chain and checkpoint/recovery evidence.
 - Credential issuance/revocation design evidence without live credentials.
+- Incident-response and rollback-drill evidence for local state corruption and incompatible recovery.
 - SBOM or explicit dependency manifest where applicable.
 - Source/package artifacts with SHA-256 checksums.
 - Provenance manifest tied to the immutable candidate commit and explicit approval record.
@@ -99,3 +103,4 @@ Withdraw the candidate if authority or key custody is ambiguous, Repository `0` 
 
 - 2026-07-16: Reclassified the newly committed trust-core artifacts as a blocked local prototype candidate; no release or deployment approved.
 - 2026-07-16: Excluded draft PR #1 from completed release work, recorded the Repository `0`/`1` route-contract decision, and blocked path-audit authority and token assignment pending approval, CI, security, provenance, and recovery evidence.
+- 2026-07-19: Added a documentation milestone covering Pages, project boundaries, contracts, onboarding, operations, recovery, incidents, and rollback; all product, route, verification, security, and release gates remain blocked or incomplete.
