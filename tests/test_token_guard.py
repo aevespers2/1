@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import pytest
+
 from partitioned_versioning.token_guard import (
     REQUIRED_CONTROLS,
     TokenGrantRequest,
@@ -24,6 +26,10 @@ def safe_request(**overrides):
     return TokenGrantRequest(**values)
 
 
+def finding_codes(result):
+    return {finding.code for finding in result.findings}
+
+
 def test_safe_proposal_only_grant_passes():
     result = evaluate_token_grant(
         safe_request(),
@@ -41,7 +47,7 @@ def test_repository_one_is_never_assignable():
         allowed_repositories=("aevespers2/0",),
     )
     assert not result.allowed
-    assert "trust_core_targeted" in {finding.code for finding in result.findings}
+    assert "trust_core_targeted" in finding_codes(result)
 
 
 def test_admin_or_long_lived_grant_fails_closed():
@@ -54,7 +60,7 @@ def test_admin_or_long_lived_grant_fails_closed():
         now=NOW,
         allowed_repositories=("aevespers2/0",),
     )
-    codes = {finding.code for finding in result.findings}
+    codes = finding_codes(result)
     assert not result.allowed
     assert {"forbidden_permission", "admin_enabled", "lifetime_too_long"}.issubset(codes)
 
@@ -66,4 +72,42 @@ def test_missing_revocation_test_blocks_assignment():
         allowed_repositories=("aevespers2/0",),
     )
     assert not result.allowed
-    assert "missing_controls" in {finding.code for finding in result.findings}
+    assert "missing_controls" in finding_codes(result)
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        "main",
+        "master/",
+        "release/",
+        "canonical/",
+        "proposal/",
+        "muse/",
+        "muse/proposal",
+        "muse/proposal/*/",
+        "muse/proposal/../",
+        "muse//proposal/",
+        "/muse/proposal/",
+        " Muse/proposal/",
+        "Muse/proposal/",
+        "",
+    ],
+)
+def test_broad_or_malformed_branch_prefix_fails_closed(prefix):
+    result = evaluate_token_grant(
+        safe_request(branch_prefixes=(prefix,)),
+        now=NOW,
+        allowed_repositories=("aevespers2/0",),
+    )
+    assert not result.allowed
+    assert "unsafe_branch_prefix" in finding_codes(result)
+
+
+def test_narrow_child_of_proposal_namespace_passes():
+    result = evaluate_token_grant(
+        safe_request(branch_prefixes=("muse/proposal/research/",)),
+        now=NOW,
+        allowed_repositories=("aevespers2/0",),
+    )
+    assert result.allowed
