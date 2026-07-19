@@ -1,0 +1,7 @@
+title: Repository 1 — Partitioned Versioning Trust Core
+description: Candidate local trust-core architecture, contracts, onboarding, operations, and release boundaries for AEVESPERS Repository 1.
+theme: jekyll-theme-cayman
+markdown: kramdown
+kramdown:
+  input: GFM
+show_downloads: false
