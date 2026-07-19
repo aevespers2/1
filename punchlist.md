@@ -45,10 +45,12 @@ This punch list validates the proposed local Partitioned Versioning Trust Core. 
 - [x] Repair the failed Security Readiness workflow by installing a pinned pytest version.
 - [x] Check out and assert the exact submitted PR head instead of the synthetic merge ref.
 - [x] Disable persisted checkout credentials and pin the checkout and Python setup actions by immutable commit SHA.
-- [ ] Confirm the new exact-head workflow run succeeds at the final submitted head.
-- [ ] Retain a deterministic test/evidence artifact with the exact head, Python version, pytest version, commands, exit code, and SHA-256 digest.
-- [ ] Add negative tests proving non-boolean `passed` values are rejected rather than coerced by truthiness.
-- [ ] Add branch-prefix validation that rejects broad or ambiguous prefixes, not only exact protected namespace strings.
+- [x] Retain deterministic exact-head test evidence with Python, pytest, commands, JUnit output, logs, and SHA-256 manifest on the previously submitted head.
+- [x] Reject non-boolean `passed` values instead of coercing truthy strings.
+- [x] Reject duplicate evidence keys, non-finite JSON values, unknown gate names, and non-string evidence metadata.
+- [x] Restrict branch grants to normalized `muse/proposal/` descendants and reject broad, protected, malformed, mixed-case, traversal, and wildcard prefixes.
+- [ ] Confirm the complete Security Readiness workflow succeeds at the final submitted head after these parsing and scope repairs.
+- [ ] Retain and record the final exact-head artifact digest.
 - [ ] Reconcile Repository `0`'s documented `working -> proposal -> quarantine` path with this candidate's direct `working -> quarantine` route before approval.
 - [ ] Keep token issuance and deployment blocked until the private authority store, external gateway, branch protections, redaction evidence, and revocation drill are independently verified.
 
