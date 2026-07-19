@@ -1,0 +1,18 @@
+{
+  "private_authoritative_store": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Must reference a private or offline authoritative store."},
+  "public_mirror_secret_free": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Attach secret-scan evidence."},
+  "operator_policy_digest_pinned": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Record an independently pinned policy digest."},
+  "muse_no_trust_core_route": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Demonstrate network and repository denial."},
+  "separate_gateway_identity": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Gateway must run separately from Muse."},
+  "secret_redaction_tested": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Attach redaction test report."},
+  "structured_operations_only": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Prove arbitrary commands and URLs are rejected."},
+  "vtx_checks_active": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Verify signature, expiry, nonce, scope and digest checks."},
+  "append_only_audit_active": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Attach append-only audit evidence."},
+  "path_audit_active": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Attach anomaly-audit test evidence."},
+  "protected_branches_active": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Confirm protected branches on target repositories."},
+  "revocation_drill_passed": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Use a disposable credential only."},
+  "protected_branch_denial_passed": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Record failed write attempt to protected branch."},
+  "trust_core_denial_passed": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Record failed access attempt to Repository 1."},
+  "grant_manifest_approved": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Reference operator-approved manifest digest."},
+  "emergency_freeze_tested": {"passed": false, "evidence_ref": "", "recorded_at": "", "notes": "Record freeze activation and denial result."}
+}
