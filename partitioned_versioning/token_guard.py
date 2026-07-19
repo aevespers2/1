@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import FrozenSet, Sequence
@@ -25,6 +26,8 @@ REQUIRED_CONTROLS = frozenset({
     "expiry_configured",
     "repository_allowlist",
 })
+PROPOSAL_BRANCH_ROOT = "muse/proposal/"
+BRANCH_PREFIX_PATTERN = re.compile(r"[a-z0-9][a-z0-9._/-]*/\Z")
 
 
 @dataclass(frozen=True)
@@ -51,6 +54,21 @@ class GuardFinding:
 class GuardResult:
     allowed: bool
     findings: tuple[GuardFinding, ...]
+
+
+def _safe_branch_prefix(prefix: object) -> bool:
+    if not isinstance(prefix, str):
+        return False
+    if prefix != prefix.strip() or prefix != prefix.lower():
+        return False
+    if not BRANCH_PREFIX_PATTERN.fullmatch(prefix):
+        return False
+    if not prefix.startswith(PROPOSAL_BRANCH_ROOT):
+        return False
+    parts = prefix[:-1].split("/")
+    if any(part in {"", ".", ".."} for part in parts):
+        return False
+    return True
 
 
 def evaluate_token_grant(
@@ -94,8 +112,13 @@ def evaluate_token_grant(
 
     if not request.branch_prefixes:
         findings.append(GuardFinding("missing_branch_prefix", "At least one proposal-only branch prefix is required."))
-    elif any(prefix in {"main", "master", "release/", "canonical/"} for prefix in request.branch_prefixes):
-        findings.append(GuardFinding("unsafe_branch_prefix", "Token branch scope includes a protected or publication namespace."))
+    elif any(not _safe_branch_prefix(prefix) for prefix in request.branch_prefixes):
+        findings.append(
+            GuardFinding(
+                "unsafe_branch_prefix",
+                f"Every token branch prefix must be a normalized child of {PROPOSAL_BRANCH_ROOT!r} and end with '/'.",
+            )
+        )
 
     missing_controls = REQUIRED_CONTROLS - request.controls
     if missing_controls:
