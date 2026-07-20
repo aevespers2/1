@@ -23,23 +23,27 @@ An authorized operator should eventually be able to:
 ### Observed on the default branch
 
 - project and architecture documentation;
-- candidate JSON Schemas for VTX envelopes, transition receipts, and state-path events;
+- one candidate JSON Schema for state-path events at `schemas/state-path-event.schema.json`;
 - a small deny-by-default Python policy evaluator;
 - access and audit design material.
 
 These artifacts are candidate inputs to review. Their existence is not proof of contract correctness, cryptographic verification, replay protection, durable storage, checkpoint recovery, or integration safety.
 
-### Candidate work outside the default branch
+### Proposed but not observed on the default branch
 
-Draft PR #1 contains additional path-audit and token-assignment preflight concepts. That work remains early candidate evidence, has no exact-head workflow evidence recorded in the release plan, and must not become canonical authorization logic without separate approval and deterministic fixtures.
+The VTX-envelope and transition-receipt schemas are design targets described in documentation; they are not currently present in the default-branch tree. They must remain classified as planned until separately added, reviewed, and validated at an immutable exact head.
+
+Draft PR #1 contains additional path-audit and token-assignment preflight concepts. That work remains early candidate evidence and must not become canonical authorization logic without separate approval and deterministic fixtures.
 
 ### Not implemented or not verified
 
 - approved product charter and authority model;
 - reconciled Repository `0` → Repository `1` route;
 - canonical serialization and error taxonomy;
+- VTX-envelope and transition-receipt schema files;
 - signature, replay, expiry, and nonce verification;
 - durable append-only receipt storage;
+- atomic receipt-and-state persistence;
 - receipt-chain corruption detection;
 - checkpoint creation and restoration;
 - private or offline root-authority design;
@@ -74,58 +78,29 @@ The local MVP must not:
 
 ## Trust zones
 
-```mermaid
-flowchart TB
-    subgraph U[Untrusted or proposal-producing zone]
-      M[Muse / QSO]
-      R0[Repository 0]
-      E[External inbound event]
-    end
+| Zone | Components | Permitted role | Prohibited authority |
+|---|---|---|---|
+| Proposal-producing | Muse, QSO, Repository `0`, external inbound events | construct or submit bounded proposals | canonical-state, policy, receipt, trust-anchor, or checkpoint mutation |
+| Validation | decoder, schema/canonicalization, capability checks, replay/expiry/nonce checks, partition policy | produce a deterministic accepted or rejected candidate decision | remote execution or implicit canonical promotion |
+| Staging | proposed resulting state and accepted-receipt candidate | prepare one atomic commit unit | visibility as canonical state before durable persistence |
+| Candidate authoritative | durable receipt ledger, canonical state, recovery checkpoints | commit accepted receipt and resulting state atomically; retain rejected receipts | self-approval or unreceipted mutation |
+| External execution | GitHub or publication adapter | execute one already-approved narrow operation and return a receipt | policy changes, trust-anchor changes, or broad repository authority |
 
-    subgraph V[Validation boundary]
-      S[Schema and canonicalization]
-      C[Capability checks]
-      P[Partition policy]
-      N[Replay / expiry / nonce checks]
-    end
-
-    subgraph T[Candidate authoritative zone]
-      L[(Receipt ledger)]
-      K[(Recovery checkpoints)]
-      H[Approved transition state]
-    end
-
-    subgraph X[External execution zone]
-      G[GitHub / publication adapter]
-    end
-
-    M --> R0
-    E --> S
-    R0 --> S
-    S --> C --> P --> N
-    N -->|reject receipt| L
-    N -->|approved transition| H
-    H --> L
-    H --> K
-    H -->|narrow authorization| G
-    G -->|execution receipt| L
-```
-
-A compromise in the proposal or execution zones must not grant authority to rewrite policy, receipts, trust anchors, or recovery checkpoints.
+A compromise in the proposal or execution zones must not grant authority to rewrite policy, receipts, trust anchors, or recovery checkpoints. On the accepted path, canonical state must not change before its accepted receipt can be committed durably in the same atomic operation.
 
 ## Proposed core contracts
 
 ### VTX envelope
 
-A versioned request that identifies the issuer, target repository, operation, source and destination partitions, payload digest, nonce, expiry, and required approvals.
+A planned versioned request that identifies the issuer, target repository, operation, source and destination partitions, payload digest, nonce, expiry, and required approvals. No VTX-envelope schema file is currently observed on the default branch.
 
 ### Transition receipt
 
-An immutable decision record containing the request digest, decision, reason codes, policy version, resulting state reference, and links to prior receipts where receipt chaining is used.
+A planned immutable decision record containing the request digest, decision, reason codes, policy version, resulting state reference, and links to prior receipts where receipt chaining is used. No transition-receipt schema file is currently observed on the default branch.
 
 ### State-path event
 
-An event used to describe or audit a path through partitions. Until separately approved, path findings are advisory observations and cannot override canonical policy.
+An observed candidate schema and event concept used to describe or audit a path through partitions. Until separately approved, path findings are advisory observations and cannot override canonical policy.
 
 ## Product lifecycle
 
@@ -159,6 +134,7 @@ Stop implementation and return to architectural review when:
 - serialization is not deterministic;
 - a negative case fails open;
 - a path score is being used as authorization;
+- receipt persistence and resulting-state persistence are not atomic;
 - recovery cannot be reproduced;
 - a remote credential is required for the local MVP;
 - documentation claims exceed exact-head evidence.
