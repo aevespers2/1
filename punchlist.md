@@ -7,6 +7,7 @@ This punch list validates the proposed local Partitioned Versioning Trust Core a
 - [ ] Approve, revise, or reject Repository `1` as the canonical state-transition, capability, revocation, receipt, and recovery authority.
 - [ ] Approve the Repository `0` proposal-only boundary and prohibited authorities.
 - [ ] Accept an immutable `ALISTAIRE-` governance-policy input and define how policy changes become active.
+- [ ] Accept, revise, or reject [ADR-0001](docs/adr/0001-canonical-state-and-capability-authority.md).
 - [ ] Approve partition semantics and permitted transition classes.
 - [ ] Define requester, operator, Architect, Builder, verifier, approver, issuer, CI, adapter, reconciler, incident, emergency-stop, and recovery authority.
 - [ ] Define key/capability ownership, issuance, rotation, revocation, expiry, use count, freeze behavior, and loss recovery.
@@ -26,7 +27,7 @@ This punch list validates the proposed local Partitioned Versioning Trust Core a
 
 - [x] Record PR #1 exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf`, Security Readiness run `29667702838`, and artifact digest `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`.
 - [ ] Record the immutable default-branch candidate commit and exact artifact inventory.
-- [ ] Reconcile README, Pages, project guide, architecture, capability-authority, obstruction/gluing, task chain, punch list, changelog, release plan, and deployment status at one exact head.
+- [ ] Reconcile README, Pages, project guide, architecture, capability-authority, obstruction/gluing, ADR, task chain, punch list, changelog, release plan, and deployment status at one exact head.
 - [ ] Separate observed default-branch artifacts from planned and draft-only contracts.
 - [ ] Validate each observed JSON Schema against Draft 2020-12 and deterministic valid/invalid fixtures.
 - [ ] Define canonical serialization and payload-digest rules.
@@ -66,16 +67,18 @@ This punch list validates the proposed local Partitioned Versioning Trust Core a
 | `O-02` | capability authority not contractually accepted | immutable governance and authority decision |
 | `O-03` | GitHub success may be confused with canonical state | authorization/execution reconciliation fixtures |
 | `O-04` | envelope and receipt ownership gap | one contract owner and compatibility policy |
+| `O-05` | identity and revocation semantics differ or are absent across genome, authority, and runtime layers | versioned identity reference, revocation propagation, and stale-identity fixtures |
 | `O-06` | freeze and restart domains not unified | no-auto-unlock contract and recovery exercise |
 | `O-07` | accepted receipt/state atomicity unproved | deterministic fault-injection evidence |
 | `O-08` | clock and replay domains undefined | canonical time/replay contract and boundary tests |
 | `O-09` | public mirror/private authority topology unresolved | reviewed deployment, redaction, custody, and recovery design |
 | `O-10` | UI review can be confused with approval | signed approval contract and read-only negative tests |
 | `O-11` | path-audit score may leak into authorization | policy non-interference tests |
+| `O-12` | correction, revocation, supersession, and evidence retention are not unified | versioned correction record, supersession links, retention/redaction policy, and review-surface fixtures |
 
 ## Evidence log
 
 Record date, task, source commit, commands, environment, result (`PASS`, `FAIL`, or `UNKNOWN`), artifacts/hashes, limitations, reviewer, and follow-up work.
 
 - 2026-07-20 — PR #1 exact-head security evidence recorded. Result applies to the draft implementation checks only; product, route, authority, private-store, credential, release, and deployment approval remain blocked.
-- 2026-07-20 — Capability-authority and obstruction/gluing documents added to PR #2. Latest coordination edits require a fresh exact-head Documentation run before the documentation reconciliation item may be checked.
+- 2026-07-20 — Capability-authority, ADR, and obstruction/gluing documents added to PR #2. Latest coordination edits require a fresh exact-head Documentation run before the documentation reconciliation item may be checked.
