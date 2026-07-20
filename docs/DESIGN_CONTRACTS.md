@@ -10,64 +10,35 @@ This document records the current candidate design and the decisions still requi
 2. **Deterministic decisions.** The same accepted inputs, policy version, and trusted state produce the same result.
 3. **Explicit authority.** Proposal, review, canonicalization, publication, recovery, and policy-change powers are separate capabilities.
 4. **Receipt every decision.** Accepted and rejected requests produce structured evidence.
-5. **Small transitions.** Each request names one bounded operation and one primary partition movement.
-6. **No implicit promotion.** Git commits, pull requests, workflow success, or file presence never imply canonical acceptance.
-7. **Reversible local prototype.** The first executable milestone contains no network listener, production credential, or remote mutation.
+5. **Atomic accepted transitions.** Canonical state and its accepted receipt become durable together or neither becomes durable.
+6. **Small transitions.** Each request names one bounded operation and one primary partition movement.
+7. **No implicit promotion.** Git commits, pull requests, workflow success, or file presence never imply canonical acceptance.
+8. **Reversible local prototype.** The first executable milestone contains no network listener, production credential, or remote mutation.
 
 ## Candidate route decision
 
 Two incompatible descriptions currently exist:
 
-```mermaid
-flowchart LR
-    W0[0:working] --> P0[0:proposal] --> Q1[1:quarantine]
-```
-
-```mermaid
-flowchart LR
-    W0[0:working] --> Q1[1:quarantine]
-```
-
-The Architect must choose one of the following:
-
-| Option | Meaning | Consequence |
+| Candidate | Path | Consequence |
 |---|---|---|
-| A — proposal partition is contractual | `0:proposal` is a versioned source state referenced by the envelope | both repositories need shared fixtures and explicit ownership |
-| B — proposal is local staging | Repository `0` may use `proposal` internally, but Repository `1` receives only a versioned envelope from `0:working` | the cross-repository contract must not depend on the staging label |
-| C — direct route only | `0:proposal` is removed from the documented route | Repository `0` documentation and tests must be revised |
+| Contractual proposal partition | `0:working → 0:proposal → 1:quarantine` | both repositories need shared fixtures and explicit ownership |
+| Direct route | `0:working → 1:quarantine` | Repository `0` documentation and tests must be revised |
+| Local staging interpretation | `0:proposal` remains internal to Repository `0`; the cross-repository envelope originates from `0:working` | the contract must not depend on the staging label |
 
 No implementation or documentation should silently select an option.
 
 ## Envelope processing pipeline
 
-```mermaid
-sequenceDiagram
-    participant I as Issuer / Repository 0
-    participant D as Decoder
-    participant V as Contract verifier
-    participant P as Policy evaluator
-    participant L as Receipt ledger
-    participant C as Canonical state
+| Order | Component | Candidate action | Durable-state rule |
+|---|---|---|---|
+| 1 | Decoder | enforce byte limits and parse the versioned envelope while retaining the original digest | no canonical mutation |
+| 2 | Contract verifier | validate version, shape, canonical form, issuer, target, nonce, expiry, payload digest, and referenced state | invalid input produces a rejected-receipt candidate |
+| 3 | Policy evaluator | evaluate capability, partition, approval, replay, and deny-by-default policy | rejection produces a rejected-receipt candidate |
+| 4 | Transition staging | compute the proposed resulting state in isolated temporary state | staged state is not canonical or externally visible |
+| 5 | Atomic persistence | commit the accepted receipt and resulting canonical state in one transaction or equivalent atomic write protocol | if either write fails, neither accepted state nor accepted receipt becomes durable |
+| 6 | Response | return the durable receipt reference | response failure does not roll back an already durable atomic commit |
 
-    I->>D: versioned envelope bytes
-    D->>V: parsed envelope + original digest
-    V->>V: version, schema, canonical form,
-    V->>V: issuer, target, nonce, expiry, payload digest
-    alt invalid contract or replay
-        V->>L: rejected receipt with stable reason code
-        L-->>I: receipt reference
-    else contract valid
-        V->>P: normalized request + trusted state
-        alt policy rejects
-            P->>L: rejected receipt + policy version
-            L-->>I: receipt reference
-        else policy permits candidate transition
-            P->>C: bounded transition request
-            C->>L: accepted receipt + resulting state reference
-            L-->>I: receipt reference
-        end
-    end
-```
+Rejected receipts may be persisted without changing canonical state. An accepted transition must never change canonical state before the corresponding accepted receipt is guaranteed durable. Implementations that cannot provide a database transaction must define and test an equivalent write-ahead, compare-and-swap, or recoverable two-phase protocol before acceptance.
 
 ## Validation order
 
@@ -85,9 +56,11 @@ The verifier should evaluate inputs in a stable order so failures are reproducib
 10. source and destination partition validity;
 11. required approval evidence;
 12. deny-by-default policy decision;
-13. receipt construction and persistence.
+13. staged resulting-state construction;
+14. accepted-receipt construction;
+15. atomic receipt-and-state persistence.
 
-A storage failure must not be converted into an accepted transition. If a receipt cannot be durably recorded, the transition fails closed.
+A storage failure must not be converted into an accepted transition. If the accepted receipt and resulting state cannot be committed atomically, the transition fails closed and canonical state remains unchanged.
 
 ## Stable error taxonomy
 
@@ -107,6 +80,7 @@ The first specification should define machine-readable reason codes. Candidate g
 - `approval.missing`
 - `policy.denied`
 - `storage.receipt_failed`
+- `storage.atomic_commit_failed`
 - `recovery.checkpoint_invalid`
 
 Exact names remain subject to P2 specification. Error text may change; reason-code semantics must be versioned.
@@ -139,6 +113,7 @@ An accepted or rejected receipt should be sufficient to reproduce why a decision
 - trusted-state reference;
 - previous receipt digest, if chained;
 - resulting state digest or unchanged-state marker;
+- atomic commit identifier for accepted transitions;
 - timestamp source and sequence information;
 - approval references;
 - execution-authorization reference, when applicable;
@@ -186,6 +161,7 @@ A path-audit design is not acceptable until it defines:
 | Route | approved source/destination edge | unknown partition, skipped stage, self-promotion |
 | Approval | required approval references present | missing, stale, or self-issued approval |
 | Ledger | receipt stored and chain advances | write failure, prior-head mismatch, corruption |
+| Atomic acceptance | receipt and resulting state commit together | receipt succeeds while state fails, state succeeds while receipt fails, interrupted two-phase recovery |
 | Recovery | valid checkpoint reconstructs exactly | altered checkpoint, missing receipt, incompatible policy |
 | Path audit | known finding produces stable advisory output | score changes authorization or nondeterministic ordering |
 
@@ -197,6 +173,7 @@ A path-audit design is not acceptable until it defines:
 - Canonicalization changes require migration fixtures and digest-impact documentation.
 - Repository `0` and Repository `1` must share route fixtures at immutable commits.
 - A migration must preserve old receipts or provide a separately verifiable translation record.
+- Atomic persistence protocol changes require interruption and recovery fixtures.
 
 ## P2 decisions still required
 
@@ -205,7 +182,7 @@ A path-audit design is not acceptable until it defines:
 - serialization profile;
 - identity and authentication model for the local prototype;
 - nonce and replay-state persistence;
-- receipt storage format and atomicity;
+- receipt storage format and atomicity protocol;
 - checkpoint format and recovery ceremony;
 - capability lifecycle and revocation;
 - stable reason-code registry;
