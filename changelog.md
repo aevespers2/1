@@ -11,6 +11,8 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-16 — Preserved the existing portfolio order: this approval decision does not supersede QSO-GENOMES acceptance or the QuantumStateObjects runnable-baseline objective.
 - 2026-07-16 — Classified draft PR #1 as early candidate implementation rather than an active Builder task because it was opened before P0 approval and P1/P2 contract decomposition.
 - 2026-07-20 — Defined Repository `1` more precisely as the candidate independently reviewable canonical-state, capability, revocation, receipt, and recovery authority, without activating that authority.
+- 2026-07-20 — Clarified Repository `1` and Repository `0` as the portable first-install security and recovery pair for newly acquired, replaced, reset, recovered, or suspect owned devices.
+- 2026-07-20 — Defined Repository `1` as the proposed independent device-baseline, capability, revocation, checkpoint, and reconciliation authority while Repository `0` performs bootstrap inspection, planning, bounded execution, and evidence production.
 
 ### Architecture
 
@@ -24,6 +26,8 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Added an obstruction and gluing ledger covering route, authority, canonical-state, contract ownership, identity, freeze, atomicity, clock/replay, public/private topology, UI approval, path-audit, and evidence-correction obstructions.
 - 2026-07-20 — Recorded the lowest-coupling route repair candidate: treat `0:proposal` as non-authoritative local Repository `0` staging while the cross-boundary contract begins at `1:quarantine`; explicit approval and shared fixtures remain required.
 - 2026-07-20 — Added ADR-0001 to capture the candidate canonical-state and capability-authority role, required separation of duties, retained route decision, adoption conditions, alternatives, consequences, and rollback path.
+- 2026-07-20 — Added the portable device trust lifecycle: device enrollment, Repository `0` inventory, Repository `1` quarantine and decision, narrow capability, reversible execution, receipt reconciliation, canonical baseline/checkpoint, revocation, supersession, and loss/replacement recovery.
+- 2026-07-20 — Added device identity, baseline-policy identity, platform-profile identity, wrong-device rejection, privacy/retention, and unsupported-state `UNKNOWN` requirements.
 
 ### Added
 
@@ -35,6 +39,7 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-19 — Added contract/state-machine design, developer onboarding, and a local operations/recovery playbook.
 - 2026-07-20 — Added `docs/CAPABILITY_AUTHORITY.md`, `docs/OBSTRUCTION_AND_GLUING.md`, and `docs/adr/0001-canonical-state-and-capability-authority.md`.
 - 2026-07-20 — Expanded `punchlist.md` with authority, route, gluing, pairwise/triple-overlap fixtures, atomicity, private-store, freeze, recovery, identity/revocation, and evidence-correction work.
+- 2026-07-20 — Added `docs/PORTABLE_TRUST_BASELINE.md` covering first-install purpose, canonical records, capability scope, lost/replaced-device recovery, Repository `0` gluing, and security invariants.
 
 ### Documentation
 
@@ -43,25 +48,33 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Reconciled README, Pages, task chain, punch list, release plan, and changelog with the capability-authority and gluing analysis.
 - 2026-07-20 — Corrected the artifact inventory: only `schemas/state-path-event.schema.json` is observed on the default branch; envelope, receipt, capability, approval, revocation, checkpoint, and execution-receipt schemas remain planned or draft-only unless separately pinned.
 - 2026-07-20 — Expanded offline documentation validation to require the governance coordination files, architecture, capability-authority guide, obstruction ledger, ADR, onboarding, operations, and access-model surface.
+- 2026-07-20 — Aligned the Pages home, task chain, punch list, release plan, and portable baseline with the clarified first-install device-security mission.
 
 ### Evidence state
 
 - **Implemented and observed on the default branch:** documentation, one state-path-event schema, and a small Python policy evaluator exist.
 - **Implemented only on draft PR #1:** path-audit model, weighted findings, dispositions, token-assignment preflight safeguards, deployment-readiness documentation, and tests; these remain unmerged and unapproved.
-- **Not verified:** accepted contract schemas, cryptographic signatures, replay/expiry enforcement, append-only durable storage, atomic receipt/state persistence, receipt chaining, checkpoint recovery, complete local-MVP tests, threat-model closure, calibrated path scoring, private key custody, and integration behavior.
-- **Proposed only:** secure transport, live capability issuance, GitHub/webhook adapters, external publication authorization, production deployment, and canonical-state guarantees.
-- 2026-07-20 — PR #1 exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf` passed Security Readiness run `29667702838`; artifact digest `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`. Passing checks do not resolve product, authority, route, private-store, key-custody, release, or deployment gates.
-- 2026-07-20 — PR #2 Documentation run `29773845205` passed at head `4efc3e29280d85ad6173b71beaf2eec546f77e87`; later governance, ADR, punch-list, and validation edits require fresh exact-head validation.
+- **Not verified:** accepted device/baseline/contract schemas, cryptographic signatures, wrong-device and replay/expiry enforcement, append-only durable storage, atomic receipt/state persistence, receipt chaining, checkpoint and loss/replacement recovery, complete local-MVP tests, per-platform controls, privacy policy, threat-model closure, calibrated path scoring, private key custody, and integration behavior.
+- **Proposed only:** secure transport, live capability issuance, device-management adapters, GitHub/webhook adapters, external publication authorization, production deployment, and canonical-state guarantees.
+- 2026-07-20 — PR #1 exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf` passed Security Readiness run `29667702838`; artifact digest `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`. Passing checks do not resolve portable product, authority, route, device identity, private-store, key-custody, release, or deployment gates.
+- 2026-07-20 — Earlier PR #2 documentation runs apply to superseded heads; the latest portable-bootstrap coordination edits require fresh exact-head validation.
+
+### Security
+
+- No credential, network listener, webhook, device-management agent, remote administration, or canonical-state service was activated.
+- Required device ownership or explicit authorization, deny-by-default capability issuance, wrong-device rejection, privacy minimization, redaction, no-auto-unlock, independent revocation, and recovery evidence.
+- Required anomaly findings to remain separate from attacker attribution and policy authorization.
+- Required unsupported or unobservable platform state to remain `UNKNOWN` rather than implicitly compliant.
 
 ### Release
 
-- No release was promoted. A first candidate remains limited to a reproducible local trust-core prototype with deterministic tests, security evidence, provenance, checksums, and rollback proof.
-- Draft PR #1 remains excluded from release consideration until product/authority approval, route reconciliation, contract ownership, private-store/key-custody review, complete local-MVP evidence, recovery, and explicit approval are complete.
-- Documentation completeness improved, but the release remains blocked on product, route, authority, contract, durable-state, security, recovery, provenance, artifact, and approval requirements.
+- No release was promoted. A first candidate remains limited to a reproducible local portable trust-core prototype with deterministic tests, per-platform evidence, security/privacy evidence, provenance, checksums, and rollback proof.
+- Draft PR #1 remains excluded from release consideration until portable product/authority approval, route reconciliation, device/baseline identity, contract ownership, private-store/key-custody review, complete local-MVP evidence, recovery, and explicit approval are complete.
+- Documentation completeness improved, but the release remains blocked on product, route, authority, identity, contract, platform, privacy, durable-state, security, recovery, provenance, artifact, and approval requirements.
 
 ### Deployment
 
-- No deployment surface, credential installation, token issuance, webhook, network listener, private gateway, canonical-state service, or remote-write workflow is authorized.
+- No deployment surface, credential installation, token issuance, device agent, webhook, network listener, private gateway, canonical-state service, or remote-write workflow is authorized.
 
 ## Entry format
 
