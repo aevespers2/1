@@ -46,6 +46,7 @@ No implementation may silently choose this interpretation. Approval requires sha
 - [Architecture](docs/ARCHITECTURE.md)
 - [Canonical-state and capability authority](docs/CAPABILITY_AUTHORITY.md)
 - [Obstruction and gluing analysis](docs/OBSTRUCTION_AND_GLUING.md)
+- [ADR-0001: candidate canonical-state and capability authority](docs/adr/0001-canonical-state-and-capability-authority.md)
 - [Contract and state-machine design](docs/DESIGN_CONTRACTS.md)
 - [Developer onboarding](docs/DEVELOPER_ONBOARDING.md)
 - [Operations and recovery playbook](docs/OPERATIONS.md)
