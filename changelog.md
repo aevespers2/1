@@ -23,6 +23,7 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Added a capability-authority design covering constitutional inputs, authority classes, separation of duties, capability envelopes, issuance, revocation, emergency stop, recovery, and cross-repository contracts.
 - 2026-07-20 — Added an obstruction and gluing ledger covering route, authority, canonical-state, contract ownership, identity, freeze, atomicity, clock/replay, public/private topology, UI approval, path-audit, and evidence-correction obstructions.
 - 2026-07-20 — Recorded the lowest-coupling route repair candidate: treat `0:proposal` as non-authoritative local Repository `0` staging while the cross-boundary contract begins at `1:quarantine`; explicit approval and shared fixtures remain required.
+- 2026-07-20 — Added ADR-0001 to capture the candidate canonical-state and capability-authority role, required separation of duties, retained route decision, adoption conditions, alternatives, consequences, and rollback path.
 
 ### Added
 
@@ -32,8 +33,8 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-19 — Added a GitHub Pages-ready landing page and Pages metadata.
 - 2026-07-19 — Added a project guide covering purpose, evidence classes, trust zones, repository relationships, lifecycle stages, non-goals, and stop conditions.
 - 2026-07-19 — Added contract/state-machine design, developer onboarding, and a local operations/recovery playbook.
-- 2026-07-20 — Added `docs/CAPABILITY_AUTHORITY.md` and `docs/OBSTRUCTION_AND_GLUING.md`.
-- 2026-07-20 — Expanded `punchlist.md` with authority, route, gluing, pairwise/triple-overlap fixtures, atomicity, private-store, freeze, and recovery work.
+- 2026-07-20 — Added `docs/CAPABILITY_AUTHORITY.md`, `docs/OBSTRUCTION_AND_GLUING.md`, and `docs/adr/0001-canonical-state-and-capability-authority.md`.
+- 2026-07-20 — Expanded `punchlist.md` with authority, route, gluing, pairwise/triple-overlap fixtures, atomicity, private-store, freeze, recovery, identity/revocation, and evidence-correction work.
 
 ### Documentation
 
@@ -41,6 +42,7 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-19 — Kept all new documentation within the existing local-only candidate scope; no implementation, credential, network, deployment, or canonical-authority claim was added.
 - 2026-07-20 — Reconciled README, Pages, task chain, punch list, release plan, and changelog with the capability-authority and gluing analysis.
 - 2026-07-20 — Corrected the artifact inventory: only `schemas/state-path-event.schema.json` is observed on the default branch; envelope, receipt, capability, approval, revocation, checkpoint, and execution-receipt schemas remain planned or draft-only unless separately pinned.
+- 2026-07-20 — Expanded offline documentation validation to require the governance coordination files, architecture, capability-authority guide, obstruction ledger, ADR, onboarding, operations, and access-model surface.
 
 ### Evidence state
 
@@ -49,7 +51,7 @@ All notable product, architecture, implementation, release, and deployment chang
 - **Not verified:** accepted contract schemas, cryptographic signatures, replay/expiry enforcement, append-only durable storage, atomic receipt/state persistence, receipt chaining, checkpoint recovery, complete local-MVP tests, threat-model closure, calibrated path scoring, private key custody, and integration behavior.
 - **Proposed only:** secure transport, live capability issuance, GitHub/webhook adapters, external publication authorization, production deployment, and canonical-state guarantees.
 - 2026-07-20 — PR #1 exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf` passed Security Readiness run `29667702838`; artifact digest `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`. Passing checks do not resolve product, authority, route, private-store, key-custody, release, or deployment gates.
-- 2026-07-20 — PR #2 Documentation run `29773845205` passed at head `4efc3e29280d85ad6173b71beaf2eec546f77e87`; later coordination edits require fresh exact-head validation.
+- 2026-07-20 — PR #2 Documentation run `29773845205` passed at head `4efc3e29280d85ad6173b71beaf2eec546f77e87`; later governance, ADR, punch-list, and validation edits require fresh exact-head validation.
 
 ### Release
 
