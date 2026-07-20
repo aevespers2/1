@@ -1,18 +1,21 @@
 # Repository 1 — Partitioned Versioning Trust Core
 
-Repository `1` is a **candidate conservative trust and state layer** for the AEVESPERS system. Its proposed role is to evaluate bounded transition requests, preserve append-only decision evidence, and support recovery without granting an agent, CI workflow, GitHub token, or external adapter authority to rewrite canonical history.
+Repository `1` is a **candidate conservative trust and state layer** for the AEVESPERS and A.L.I.S.T.A.I.R.E. systems. Its proposed role is to evaluate bounded transition requests, preserve append-only decision evidence, issue or deny narrowly scoped capabilities, and support recovery without granting an agent, CI workflow, GitHub token, or external adapter authority to rewrite canonical history.
 
-> **Current status:** `P0 — REVIEW / APPROVAL REQUIRED`. The repository contains candidate documentation, one observed state-path-event schema, and a small policy evaluator. It is not a released security boundary, deployed service, durable ledger, or verified recovery system.
+> **Current status:** `P0 — REVIEW / APPROVAL REQUIRED`. The repository contains candidate documentation, one observed state-path-event schema, and a small policy evaluator. It is not a released security boundary, deployed service, durable ledger, credential issuer, or verified recovery system.
 
 ## Documentation map
 
 - [Project guide](PROJECT_GUIDE.md)
 - [Architecture](ARCHITECTURE.md)
+- [Canonical-state and capability authority](CAPABILITY_AUTHORITY.md)
+- [Obstruction and gluing analysis](OBSTRUCTION_AND_GLUING.md)
 - [Contract and state-machine design](DESIGN_CONTRACTS.md)
 - [Developer onboarding](DEVELOPER_ONBOARDING.md)
 - [Operations and recovery playbook](OPERATIONS.md)
 - [Muse access model](MUSE_ACCESS_MODEL.md)
 - [Task chain on GitHub](https://github.com/aevespers2/1/blob/main/taskchain.md)
+- [Punch list on GitHub](https://github.com/aevespers2/1/blob/main/punchlist.md)
 - [Release plan on GitHub](https://github.com/aevespers2/1/blob/main/release.md)
 - [Changelog on GitHub](https://github.com/aevespers2/1/blob/main/changelog.md)
 
@@ -20,13 +23,15 @@ The GitHub links intentionally point to repository source because a Pages site b
 
 ## Candidate system boundary
 
-The inbound route is unresolved. Documentation therefore records both candidates without treating either as canonical:
+The inbound route is unresolved. Documentation records three interpretations without treating any as canonical:
 
 | Candidate | Proposed path | Status |
 |---|---|---|
 | Contractual proposal partition | `0:working → 0:proposal → 1:quarantine` | requires shared fixtures and explicit ownership |
 | Direct envelope route | `0:working → 1:quarantine` | requires Repository `0` documentation and tests to align |
-| Local staging interpretation | `0:proposal` remains internal to Repository `0`; the cross-repository envelope originates from `0:working` | requires explicit architectural approval |
+| Local staging interpretation | `0:proposal` is non-authoritative Repository `0` staging; the cross-boundary contract begins at `1:quarantine` | lowest-coupling recommendation; explicit approval still required |
+
+The local-staging interpretation is recommended for review because it preserves Repository `0`'s planning workflow while avoiding a duplicate Repository `1` partition and preventing local staging from gaining authority. It remains blocked until both repositories pin the same route definition and pass shared compatibility fixtures.
 
 After a route is approved, the intended processing boundary is:
 
@@ -40,7 +45,17 @@ After a route is approved, the intended processing boundary is:
 | Optional execution | issue one narrow, expiring authorization to an external adapter | retain the execution receipt or record failure |
 | Recovery | verify an independent checkpoint and simulate restoration before approval | never overwrite canonical state implicitly |
 
-This is a design target, not evidence that every component exists. Durable receipt storage, cryptographic verification, replay protection, checkpoint recovery, external adapters, and authoritative key custody remain unimplemented or unverified.
+This is a design target, not evidence that every component exists. Durable receipt storage, cryptographic verification, replay protection, checkpoint recovery, external adapters, authoritative key custody, and live capability issuance remain unimplemented or unverified.
+
+## Portfolio authority separation
+
+| Responsibility | Candidate owner | Must not collapse into |
+|---|---|---|
+| mission and constitutional governance | `ALISTAIRE-` | runtime execution or credential custody |
+| autonomous planning and proposal preparation | Repository `0` | self-approval or canonical writes |
+| canonical-state decision, capability issuance, revocation, and recovery | Repository `1` | silent governance changes or self-approved root authority |
+| external execution | GitHub, publication, model, payment, or infrastructure adapter | canonical promotion merely because an operation succeeds |
+| human review | QSO-STUDIO or AionUi | unsigned approval or capability minting |
 
 ## Proposed responsibilities
 
@@ -78,13 +93,16 @@ All movement is explicit and receipt-producing. A file does not become canonical
 
 ## Current release posture
 
-No release or deployment is authorized. Before a first local candidate can be considered, the repository needs an approved charter and route model, deterministic contract and policy tests, durable atomic receipt-and-state behavior, a threat model, clean-checkout reproducibility, provenance, artifacts, checksums, rollback evidence, and explicit approval.
+No release or deployment is authorized. Before a first local candidate can be considered, the repository needs an approved charter, capability-authority boundary, and route model; deterministic contract and policy tests; durable atomic receipt-and-state behavior; a threat model; clean-checkout reproducibility; provenance; artifacts; checksums; rollback evidence; and explicit approval.
 
-## Architectural decision required
+## Architectural clarification required
 
-Repository `0` and Repository `1` currently describe different inbound routes:
+Formal approval is required for:
 
-1. `0:working → 0:proposal → 1:quarantine`
-2. `0:working → 1:quarantine`
+1. Repository `1` as canonical-state and capability authority;
+2. the local-staging or alternative Repository `0` inbound-route interpretation;
+3. contract/package ownership for envelopes, capabilities, approvals, receipts, revocations, and checkpoints;
+4. the private/offline authority-store and key-custody model;
+5. named human owners for policy, credentials, security, incident response, emergency stop, and recovery.
 
-The Architect must select one canonical contract or define `0:proposal` as non-authoritative local staging. Until then, documentation may explain both candidates, but implementation must not silently choose between them.
+Until then, documentation may recommend and compare candidates, but implementation must not silently select or activate one.
