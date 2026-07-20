@@ -6,58 +6,93 @@ States: `PROPOSED` · `READY` · `IN PROGRESS` · `BLOCKED` · `REVIEW` · `DONE
 
 ## Product directive
 
-- **Next objective:** Accept, revise, or reject the newly introduced **Partitioned Versioning Trust Core** charter and reconcile the Repository `0` → Repository `1` transition contract before any additional implementation or external integration.
+- **Next objective:** Accept, revise, or reject the **Partitioned Versioning Trust Core** charter, Repository `1` capability-authority role, and the Repository `0` → Repository `1` gluing contract before additional implementation or external integration.
 - **User outcome:** An operator can submit a bounded state-transition proposal from Repository `0`, receive a deterministic allow/reject decision and append-only receipt from Repository `1`, and recover a previously approved checkpoint without giving Muse, CI, a GitHub token, or an external adapter authority to rewrite canonical history.
-- **MVP scope:** local-only reference implementation of versioned VTX envelopes, transition receipts, state-path events, deny-by-default partition/capability policy, deterministic verification, append-only local audit records, checkpoint creation/verification, recovery simulation, and an explicitly approved advisory path-audit function. The MVP contains no credentials, network listener, remote mutation, autonomous approval, or production key custody.
-- **Priority:** `P0 — REVIEW / APPROVAL REQUIRED`. This is an immediate product-boundary and contract decision, not a portfolio reprioritization. QSO-GENOMES acceptance and the QuantumStateObjects runnable baseline retain their existing upstream priorities unless a separate decision changes them.
-- **Success criteria:** the charter and Repository `0` boundary are approved; one canonical route/state model is selected; schemas are versioned and fail closed; policy decisions, replay/expiry behavior, receipt chaining, checkpoint verification, recovery, and path-audit semantics are covered by deterministic positive and negative tests; threat model and key/capability lifecycle are documented; a clean checkout reproduces all checks; and no single GitHub, CI, agent, or adapter credential can mutate canonical state.
-- **Non-goals:** replacing Git itself; claiming a secure transport exists; storing production secrets or root keys; operating a remote service; automatic publication/deployment; autonomous trust-anchor rotation; using heuristic anomaly scores as proof of compromise; bypassing GitHub protections; or treating current draft code as release evidence before validation.
-- **Release rationale:** a small local trust-core prototype can establish verifiable authority separation, route semantics, and recovery behavior before any webhook, GitHub, VTX transport, or multi-repository automation is allowed. Shipping remote integration or authoritative anomaly scoring first would turn an unreviewed design into a security dependency.
+- **MVP scope:** local-only reference design and later implementation of versioned envelopes, receipts, state-path events, deny-by-default partition/capability policy, deterministic verification, append-only local audit records, checkpoint creation/verification, recovery simulation, and an explicitly approved advisory path-audit function. The MVP contains no credentials, network listener, remote mutation, autonomous approval, or production key custody.
+- **Priority:** `P0 — REVIEW / APPROVAL REQUIRED`. This is an immediate product-boundary, authority, and contract decision, not a portfolio reprioritization. QSO-GENOMES acceptance and the QuantumStateObjects runnable baseline retain their upstream priorities unless a separate decision changes them.
+- **Success criteria:** the charter and Repository `0` boundary are approved; one canonical route interpretation is selected; schemas are versioned and fail closed; policy decisions, replay/expiry behavior, receipt chaining, checkpoint verification, recovery, and path-audit semantics are covered by deterministic positive and negative tests; threat model and key/capability lifecycle are documented; a clean checkout reproduces all checks; and no single GitHub, CI, agent, or adapter credential can mutate canonical state.
+- **Non-goals:** replacing Git; claiming a secure transport exists; storing production secrets or root keys; operating a remote service; automatic publication/deployment; autonomous trust-anchor rotation; using heuristic anomaly scores as proof of compromise; bypassing GitHub protections; or treating draft code or documentation as release evidence before exact-head validation and approval.
 
-## Evidence classification
+## Current evidence state
 
-### Observed implemented artifacts — not yet accepted
+### Observed on `main`
 
-- README and architecture documents describing Repository `0` → Repository `1` proposal and approval flow.
-- `schemas/vtx-envelope.schema.json`, `schemas/transition-receipt.schema.json`, and `schemas/state-path-event.schema.json`.
+- README and architecture/access/audit documents describing the Repository `0` → Repository `1` proposal and approval flow.
+- `schemas/state-path-event.schema.json`.
 - `partitioned_versioning/policy.py` with a deny-by-default transition evaluator.
-- Muse access, communication, and visual audit design documents.
-- Draft PR #1 adds path-audit logic, token-assignment preflight safeguards, deployment-readiness documentation, and tests.
+- Muse access and visual-audit design documents.
 
-These artifacts establish a concrete candidate direction. They do **not** establish cryptographic verification, durable append-only storage, replay protection, checkpoint recovery, complete contract compatibility, calibrated security scoring, secure key custody, transport security, or release readiness.
+VTX-envelope, transition-receipt, capability, approval, revocation, checkpoint, and execution-receipt schemas remain planned unless separately observed and pinned. Documentation must not describe them as accepted default-branch implementation.
 
-## Draft implementation gate — PR #1
+### Draft implementation candidate — PR #1
 
-**Status:** `REVIEW — EARLY IMPLEMENTATION, NOT MERGE-READY`
+**Status:** `REVIEW — EXACT-HEAD SECURITY CI PASSED; PRODUCT AND CONTRACT GATES REMAIN BLOCKED`
 
-Draft PR #1 was opened before P0 authority approval and before P1/P2 inventory and decomposition were completed. It therefore remains candidate evidence rather than an active Builder deliverable. Its current head is `e1b20b4cd59c5ec2aa0b2c92024868ffa6fd500f`; no GitHub Actions workflow run is attached to that head.
+- exact head: `0813308061e27e8289ea8f15af7d5ccdc84b4abf`;
+- Security Readiness run `29667702838`: `PASS`;
+- retained artifact digest: `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`;
+- implemented only in the draft: path-audit model, advisory dispositions, token-assignment preflight safeguards, tests, and deployment-readiness documentation.
 
-A cross-repository contract mismatch must be resolved: Repository `0` draft PR #6 documents `0:working -> 0:proposal -> 1:quarantine`, while PR #1 tests a direct `0:working -> 1:quarantine` transition and its normal edge set contains no `proposal` partition. The Architect must either add and define the proposal stage, remove it from the Repository `0` contract, or explicitly model it as local staging that is not part of Repository `1`'s authoritative transition graph.
+The passing run verifies the submitted candidate's stated checks. It does not approve Repository `1` as capability authority, resolve the cross-repository route, validate private key custody or a private authority store, authorize token issuance, or make the draft merge/release ready.
 
-The path score and thresholds are advisory review signals only. They must not become canonical allow/reject authority without an approved threat model, stable event schema, deterministic error semantics, calibration rationale, false-positive/false-negative fixtures, and a rule explaining how path findings interact with the deny-by-default policy evaluator. Token-assignment safeguards are likewise design evidence only; no token issuance, gateway activation, or remote authority is approved.
+### Documentation and governance candidate — PR #2
 
-**Directive:** keep PR #1 draft. Do not merge until P0 is approved, P1 records the exact candidate inventory, P2 defines path-audit and token-preflight ownership and interfaces, the Repository `0` route contract is reconciled, exact-head clean-checkout CI and negative fixtures pass, and the Architect confirms whether each feature belongs in the local MVP or a later observability/integration layer.
+**Status:** `REVIEW — DOCUMENTATION MILESTONE; NO AUTHORITY EXPANSION`
+
+The branch adds Pages-ready project, architecture, contract, capability-authority, obstruction/gluing, onboarding, operations, recovery, and rollback documentation plus exact-head validation. Completed run `29773845205` passed at head `4efc3e29280d85ad6173b71beaf2eec546f77e87` with artifact digest `sha256:95143ecf775930ac690c3e0ae86840a93a51297e5f67ba7f3ecbe43bb442feb9`. Later coordination edits require a new exact-head run before review readiness is claimed.
+
+## Material gluing obstruction
+
+Repository `0` draft PR #6 describes:
+
+`0:working → 0:proposal → 1:quarantine`
+
+Repository `1` draft PR #1 tests:
+
+`0:working → 1:quarantine`
+
+The lowest-coupling repair candidate is to define `0:proposal` as non-authoritative local staging in Repository `0`, with the cross-repository contract beginning when the versioned proposal envelope enters `1:quarantine`. This preserves Repository `0`'s proposal workflow without adding a Repository `1` proposal partition or granting staging authority. It remains a recommendation for explicit approval, not an implemented or accepted contract.
+
+Approval requires one versioned route definition and shared positive, negative, stale, replay, unsupported-version, expected-head, and rollback fixtures pinned to immutable commits in both repositories.
+
+## Architecture and authority gates
+
+The Architect must record decisions for:
+
+1. Repository `1` as canonical-state and capability authority, or an alternative owner;
+2. constitutional input from `ALISTAIRE-` and separation from Repository `0` orchestration;
+3. the inbound route and whether `0:proposal` is local staging;
+4. package/schema ownership for envelopes, capabilities, approvals, receipts, revocations, checkpoints, and execution receipts;
+5. canonical serialization, digest, clock, nonce, replay, expiry, and reason-code semantics;
+6. private/offline authority-store topology, key custody, rotation, revocation, and loss recovery;
+7. human owners for policy, approval, credentials, security, incident response, emergency stop, and recovery;
+8. atomic receipt/state persistence, checkpoint, correction, rollback, and restart behavior.
 
 ## Active chain
 
 | Priority | Task | Owner | Depends on | Status | Acceptance criteria |
 |---|---|---|---|---|---|
-| P0 | Approve, revise, or reject the Partitioned Versioning Trust Core charter and canonical route model | Architect | User approval | REVIEW | Purpose, users, Repository `0` boundary, authority model, partitions, route semantics, MVP, non-goals, threat model, key/capability ownership, release identity, and retirement/rollback option are approved. |
-| P1 | Inventory and verify the committed candidate artifacts and both cross-repository drafts | Architect | P0 approval | BLOCKED | Exact files and commits are recorded; schemas validate; policy, path-audit, and token-preflight behavior are classified; missing implementation is separated from proposals; stale coordination documents and route conflicts are reconciled. |
-| P2 | Specify the local deterministic trust-core MVP | Architect | P1 | PROPOSED | Named files, APIs, state transitions, cross-repository contracts, failure modes, fixtures, test matrix, evidence outputs, stop conditions, and rollback are Builder-ready. |
+| P0 | Approve, revise, or reject the trust-core charter, capability-authority role, and canonical route model | Architect | User approval | REVIEW | Purpose, users, Repository `0` boundary, authority model, partitions, route semantics, MVP, non-goals, threat model, key/capability ownership, release identity, and retirement/rollback option are approved. |
+| P0A | Review the capability-authority and obstruction/gluing documentation | Architect | P0 evidence preparation | REVIEW | Authority classes, separation of duties, cross-repository contracts, obstruction ledger, recommended route repair, emergency stop, and open decisions are accurate and bounded. |
+| P1 | Inventory and verify default-branch artifacts and both draft candidates | Architect | P0 approval | BLOCKED | Exact files and commits are recorded; planned versus observed contracts are separated; schemas validate; policy/path/token behavior is classified; coordination records are current. |
+| P2 | Specify the local deterministic trust-core MVP and shared fixture corpus | Architect | P1 | PROPOSED | Named files, APIs, route, state transitions, ownership, failure modes, fixtures, test matrix, evidence outputs, stop conditions, and rollback are Builder-ready. |
 | P3 | Implement and test the local no-network MVP | Builder | P2 | PROPOSED | Envelope/receipt validation, replay/expiry checks, append-only audit records, checkpoint verification, recovery simulation, approved advisory behavior, and negative fixtures pass from a clean checkout. |
-| P4 | Review an optional Repository `0` adapter | Architect | P3 and separate approval | PROPOSED | Adapter has proposal-only authority, no root credentials, bounded operations, execution receipts, revocation, and failure recovery; remote writes remain disabled by default. |
+| P4 | Review an optional Repository `0` or external adapter | Architect | P3 and separate approval | PROPOSED | Adapter has proposal/execution-only authority, no root credentials, bounded operations, execution receipts, revocation, and failure recovery; remote writes remain disabled by default. |
 | P5 | Consider a release candidate | Releaser | P3 or approved P4 | PROPOSED | Tests, security review, provenance, SBOM/dependencies, documentation, artifacts, checksums, rollback drill, and explicit approval pass at one immutable commit. |
 
 ## Builder rules
 
-- No Builder task is `READY` until P0 is approved and P2 is decomposed.
+- No implementation Builder task is `READY` until P0 is approved and P2 is decomposed.
+- Documentation may compare and recommend route/authority candidates but must not silently activate one.
 - Do not add credentials, webhooks, network listeners, GitHub write workflows, external publication, or production key material under the current directive.
-- Treat all current capability statements, anomaly scores, and token safeguards as design claims until reproduced by exact-head tests and evidence.
-- Stop on ambiguous authority, inconsistent route semantics, unclear key custody, non-reproducible state, or an undefined rollback path.
+- Treat capability statements, anomaly scores, token safeguards, and passing draft CI as bounded evidence rather than product approval.
+- Stop on ambiguous authority, inconsistent route semantics, unclear key custody, non-reproducible state, missing exact-head evidence, or an undefined rollback path.
+
+## Evidence rules
+
+Record approval decisions, source commits, commands/results, schema and fixture hashes, policy decisions, path-audit findings, security findings, dependency/tool versions, artifacts, limitations, superseded evidence, rollback instructions, and follow-up work.
 
 ## Builder log
 
-Record approval decisions, source commits, commands/results, schema and fixture hashes, policy decisions, path-audit findings, security findings, dependency/tool versions, artifacts, limitations, rollback evidence, and follow-up work.
-
-- 2026-07-16 — Synchronized draft PR #1 to current head `e1b20b4cd59c5ec2aa0b2c92024868ffa6fd500f`; no workflow run is attached. The draft remains excluded from active implementation and release until product authority and route semantics are approved.
+- 2026-07-20 — Reconciled PR #1 to exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf` and successful Security Readiness run `29667702838`; preserved every product, route, key-custody, private-store, release, and deployment blocker.
+- 2026-07-20 — Added capability-authority and obstruction/gluing documentation, recorded the local-staging route recommendation for review, separated observed from planned schemas, and required shared pairwise and triple-overlap fixtures. No implementation or privileged authority was added.
