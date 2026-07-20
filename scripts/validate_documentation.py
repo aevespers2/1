@@ -17,13 +17,20 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_PATHS = (
     Path("README.md"),
+    Path("taskchain.md"),
+    Path("punchlist.md"),
     Path("release.md"),
     Path("changelog.md"),
     Path("docs/index.md"),
     Path("docs/PROJECT_GUIDE.md"),
+    Path("docs/ARCHITECTURE.md"),
+    Path("docs/CAPABILITY_AUTHORITY.md"),
+    Path("docs/OBSTRUCTION_AND_GLUING.md"),
+    Path("docs/adr/0001-canonical-state-and-capability-authority.md"),
     Path("docs/DESIGN_CONTRACTS.md"),
     Path("docs/DEVELOPER_ONBOARDING.md"),
     Path("docs/OPERATIONS.md"),
+    Path("docs/MUSE_ACCESS_MODEL.md"),
     Path("docs/_config.yml"),
 )
 MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
@@ -103,6 +110,7 @@ def main() -> int:
     report = {
         "schema_version": 1,
         "documentation_files": [path.as_posix() for path in documentation_files()],
+        "required_paths": [path.as_posix() for path in REQUIRED_PATHS],
         "checked_relative_links": checked_links,
         "findings": findings,
         "status": "pass" if not findings else "fail",
