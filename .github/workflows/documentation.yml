@@ -32,7 +32,9 @@ jobs:
           python-version: '3.12'
 
       - name: Validate documentation and relative links
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p evidence/documentation
           python scripts/validate_documentation.py 2>&1 | tee evidence/documentation/validation.log
 
