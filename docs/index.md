@@ -11,6 +11,7 @@ Its proposed role is to evaluate bounded transition requests, preserve append-on
 - [Project guide](PROJECT_GUIDE.md)
 - [Architecture](ARCHITECTURE.md)
 - [Portable device trust baseline](PORTABLE_TRUST_BASELINE.md)
+- [Portable Security Contract v0](PORTABLE_SECURITY_CONTRACT_V0.md)
 - [Canonical-state and capability authority](CAPABILITY_AUTHORITY.md)
 - [Obstruction and gluing analysis](OBSTRUCTION_AND_GLUING.md)
 - [ADR-0001: candidate canonical-state and capability authority](adr/0001-canonical-state-and-capability-authority.md)
@@ -30,36 +31,47 @@ The GitHub links intentionally point to repository source because a Pages site b
 ```mermaid
 flowchart LR
     D[New, recovered, replaced, or suspect owned device] --> O[Repository 0 read-only observation]
-    O --> P[Versioned local proposal]
-    P --> Q[Repository 1 quarantine]
+    O --> P[Non-authoritative local proposal]
+    P --> E[Versioned proposal envelope]
+    E --> Q[Repository 1 quarantine]
     Q --> V[Contract, identity, freshness, replay, and policy checks]
     V --> A{Authority decision}
     A -->|reject| X[Rejected receipt and retained evidence]
     A -->|human review required| H[Review queue]
     A -->|approved| C[Narrow expiring capability]
-    C --> E[Repository 0 bounded reversible execution]
-    E --> R[Execution and resulting-state receipt]
+    C --> R0[Repository 0 bounded reversible execution]
+    R0 --> R[Execution and resulting-state receipt]
     R --> K[Repository 1 reconciliation]
     K --> B[Approved baseline or recovery checkpoint]
 ```
 
-Repository `1` begins its cross-repository responsibility when a versioned proposal enters quarantine. Any `0:proposal` partition is currently recommended as non-authoritative local staging inside Repository `0`, pending explicit approval and shared fixtures.
+Repository `1` begins its cross-repository responsibility when a versioned proposal enters quarantine. `0:proposal` is documented by the shared contract as non-authoritative local staging inside Repository `0`; formal acceptance still requires shared fixtures and explicit approval.
 
 A successful external command does not become canonical by success alone. Unsupported or unobservable platform state remains `UNKNOWN`. An unavailable prior device is not treated as remotely revoked unless the relevant external authority produces verifiable evidence.
 
+## Shared contract candidate
+
+[Portable Security Contract v0](PORTABLE_SECURITY_CONTRACT_V0.md) now provides a concrete pre-acceptance contract aligned with Repository `0`. It defines:
+
+- the local-staging-to-quarantine route;
+- device, environment, ownership, platform-profile, baseline, policy, producer, time, nonce, expected-head, digest, and evidence identifiers;
+- `PASS`, `FAIL`, `UNKNOWN`, and `NOT_APPLICABLE` semantics;
+- proposal-admission, narrow-capability, execution-receipt, reconciliation, revocation, emergency-stop, correction, and supersession rules;
+- privacy, retention, canonicalization, integrity, versioning, and 18 shared fixture classes.
+
+This documentation alignment is not yet an accepted machine-readable contract. Ownership, device identity derivation, key custody, canonical serialization, signatures, platform baseline authority, retention periods, recovery quorum, and named human approvals remain open.
+
 ## Candidate system boundary
 
-The inbound route is unresolved. Documentation records three interpretations without treating any as canonical:
+The route conflict is now narrowed to one proposed interpretation:
 
 | Candidate | Proposed path | Status |
 |---|---|---|
-| Contractual proposal partition | `0:working → 0:proposal → 1:quarantine` | requires shared fixtures and explicit ownership |
-| Direct envelope route | `0:working → 1:quarantine` | requires Repository `0` documentation and tests to align |
-| Local staging interpretation | `0:proposal` is non-authoritative Repository `0` staging; the cross-boundary contract begins at `1:quarantine` | lowest-coupling recommendation; explicit approval still required |
+| Local staging interpretation | `0:working → 0:proposal (local only) → versioned envelope → 1:quarantine` | documented in both repositories; approval and shared fixtures still required |
 
-The local-staging interpretation is recommended for review because it preserves Repository `0`'s planning workflow while avoiding a duplicate Repository `1` partition and preventing local staging from gaining authority. It remains blocked until both repositories pin the same route definition and pass shared compatibility fixtures.
+The local-staging interpretation preserves Repository `0`'s planning workflow while avoiding a duplicate Repository `1` proposal partition and preventing local staging from gaining authority.
 
-After a route is approved, the intended processing boundary is:
+After the route is approved, the intended processing boundary is:
 
 | Stage | Candidate responsibility | Failure behavior |
 |---|---|---|
@@ -122,18 +134,18 @@ All movement is explicit and receipt-producing. A file does not become canonical
 
 ## Current release posture
 
-No release or deployment is authorized. Before a first local portable candidate can be considered, the repository needs an approved charter, device and baseline identity model, capability-authority boundary, route model, per-platform support matrix, privacy/retention policy, deterministic contract and policy tests, durable atomic receipt-and-state behavior, a threat model, clean-checkout reproducibility, provenance, artifacts, checksums, rollback evidence, loss/replacement recovery evidence, and explicit approval.
+No release or deployment is authorized. Before a first local portable candidate can be considered, the repository needs an approved charter, accepted Portable Security Contract version, device and baseline identity model, capability-authority boundary, per-platform support matrix, privacy/retention policy, deterministic shared contract and policy tests, durable atomic receipt-and-state behavior, a threat model, clean-checkout reproducibility, provenance, artifacts, checksums, rollback evidence, loss/replacement recovery evidence, and explicit approval.
 
 ## Architectural clarification required
 
 Formal approval is required for:
 
 1. Repository `1` as canonical device-baseline, state, capability, revocation, receipt, checkpoint, and recovery authority;
-2. the local-staging or alternative Repository `0` inbound-route interpretation;
+2. Portable Security Contract v0 and the local-staging Repository `0` inbound route;
 3. device identity, baseline-policy identity, ownership scope, replacement/retirement, and per-platform support semantics;
-4. contract/package ownership for inventories, proposals, capabilities, approvals, receipts, revocations, resulting-state records, and checkpoints;
-5. the private/offline authority-store and key-custody model;
+4. contract/package ownership for inventories, proposals, capabilities, approvals, receipts, revocations, corrections, resulting-state records, and checkpoints;
+5. canonical serialization, signature, and private/offline authority-store and key-custody model;
 6. privacy, redaction, retention, export, and deletion policy;
 7. named human owners for policy, credentials, privacy, security, incident response, emergency stop, and recovery.
 
-Until then, documentation may recommend and compare candidates, but implementation must not silently select or activate one.
+Until then, documentation may recommend and compare candidates, but implementation must not silently activate authority.
