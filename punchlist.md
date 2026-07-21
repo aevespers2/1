@@ -4,7 +4,7 @@ This punch list validates the proposed local Partitioned Versioning Trust Core, 
 
 ## P0 — Product, governance, and authority approval
 
-- [ ] Approve, revise, or reject Repository `1` as the canonical device-baseline, state-transition, capability, revocation, receipt, checkpoint, and recovery authority.
+- [ ] Approve, revise, or reject Repository `1` as the canonical device-baseline, state-transition, capability, revocation, receipt, checkpoint, correction, and recovery authority.
 - [ ] Approve the Repository `0` bootstrap, inspection, proposal, bounded-execution, and prohibited-authority boundary.
 - [ ] Define authorized device scope: owned devices or environments with explicit permission only.
 - [ ] Accept an immutable `ALISTAIRE-` governance-policy input and define how policy changes become active.
@@ -17,15 +17,17 @@ This punch list validates the proposed local Partitioned Versioning Trust Core, 
 
 ## P0A — Portable identity, route, and gluing decision
 
-- [ ] Approve one Repository `0` → Repository `1` route interpretation.
-- [ ] Decide whether `0:proposal` is a contractual partition, non-authoritative local staging, or removed.
-- [ ] Record the recommended local-staging interpretation and its rejected alternatives in an ADR or equivalent decision record.
-- [ ] Define device identity, ownership scope, enrollment, replacement, retirement, loss, theft, and uncertain-state semantics.
+- [x] Draft [Portable Security Contract v0](docs/PORTABLE_SECURITY_CONTRACT_V0.md) with the local-staging-to-quarantine route and bounded authority model aligned to Repository `0`.
+- [ ] Approve or revise Portable Security Contract v0 and assign its canonical repository/package owner.
+- [ ] Confirm `0:proposal` as non-authoritative local staging or record an approved alternative.
+- [ ] Record the route decision and rejected alternatives in an ADR or equivalent decision record.
+- [ ] Define device identity, environment identity, ownership scope, enrollment, replacement, retirement, loss, theft, and uncertain-state semantics.
 - [ ] Define baseline-policy identity, platform-profile identity, expected-head binding, and migration rules.
-- [ ] Assign package/schema ownership for inventory, proposals, envelopes, capabilities, approvals, receipts, revocations, checkpoints, resulting-state records, execution receipts, and shared reason codes.
-- [ ] Define canonical serialization, digest, expected-head, clock, skew, nonce, replay-domain, expiry, and idempotency semantics.
-- [ ] Create shared positive, negative, stale, replay, unsupported-version, wrong-device, revoked-device, mismatch, partial-failure, and rollback fixtures pinned to exact commits in Repository `0` and Repository `1`.
+- [ ] Assign package/schema ownership for inventory, proposals, envelopes, capabilities, approvals, receipts, revocations, corrections, checkpoints, resulting-state records, execution receipts, and shared reason codes.
+- [ ] Define canonical serialization, digest, signature, expected-head, clock, skew, nonce, replay-domain, expiry, idempotency, and correction/supersession semantics.
+- [ ] Create the 18 shared fixture classes listed in Portable Security Contract v0 and pin them to exact commits in Repository `0` and Repository `1`.
 - [ ] Create triple-overlap fixtures for `ALISTAIRE-` → Repository `0` → Repository `1`, Repository `0` → Repository `1` → platform adapter, and Repository `0` → Repository `1` → recovery store.
+- [ ] Verify both repositories contain semantically aligned contract documents and pass the same fixture bundle.
 
 ## P0B — Platform, privacy, and recovery policy
 
@@ -42,7 +44,7 @@ This punch list validates the proposed local Partitioned Versioning Trust Core, 
 
 - [x] Record PR #1 exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf`, Security Readiness run `29667702838`, and artifact digest `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`.
 - [ ] Record the immutable default-branch candidate commit and exact artifact inventory.
-- [ ] Reconcile README, Pages, portable baseline, project guide, architecture, capability-authority, obstruction/gluing, ADR, task chain, punch list, changelog, release plan, and deployment status at one exact head.
+- [ ] Reconcile README, Pages, portable baseline, Portable Security Contract v0, project guide, architecture, capability-authority, obstruction/gluing, ADR, task chain, punch list, changelog, release plan, and deployment status at one exact head.
 - [ ] Separate observed default-branch artifacts from planned and draft-only contracts.
 - [ ] Validate each observed JSON Schema against Draft 2020-12 and deterministic valid/invalid fixtures.
 - [ ] Define canonical serialization and payload-digest rules.
@@ -59,7 +61,7 @@ This punch list validates the proposed local Partitioned Versioning Trust Core, 
 - [ ] Commit accepted receipt and resulting canonical state atomically; prove failure between writes cannot leave partial canonical state.
 - [ ] Implement checkpoint creation, verification, and lost/replaced-device recovery simulation.
 - [ ] Keep path-audit findings advisory and prove they cannot override canonical policy.
-- [ ] Add positive, negative, wrong-device, tamper, replay, stale, approval, recovery, revocation, freeze, expected-head, partial-failure, and property-based fixtures where practical.
+- [ ] Add positive, negative, wrong-device, tamper, replay, stale, approval, recovery, revocation, freeze, expected-head, partial-failure, correction, and property-based fixtures where practical.
 - [ ] Run targeted and complete tests from a clean checkout at one immutable commit.
 
 ## P3 — Security, provenance, and release evidence
@@ -71,21 +73,21 @@ This punch list validates the proposed local Partitioned Versioning Trust Core, 
 - [ ] Record dependency/runtime/tool versions and produce an SBOM or explicit dependency manifest.
 - [ ] Generate test, security, privacy, provenance, documentation, platform-profile, and reproducibility reports.
 - [ ] Generate source/package artifacts and SHA-256 checksum manifest.
-- [ ] Perform and record a route rollback, receipt/state atomicity, checkpoint recovery, device-loss/replacement, and portfolio freeze/restart drill.
+- [ ] Perform and record a route rollback, receipt/state atomicity, checkpoint recovery, device-loss/replacement, correction/supersession, and portfolio freeze/restart drill.
 - [ ] Record explicit release approval.
 
 ## Open obstruction ledger
 
 | ID | Obstruction | Exit witness |
 |---|---|---|
-| `O-01` | Repository `0` inbound route mismatch | approved route plus shared fixtures |
+| `O-01` | route text aligned but not contractually accepted | approved Portable Security Contract version plus shared fixtures |
 | `O-02` | capability and portable baseline authority not contractually accepted | immutable governance and authority decision |
 | `O-03` | GitHub or device-command success may be confused with canonical state | authorization/execution reconciliation fixtures |
 | `O-04` | device, baseline, envelope, and receipt ownership gap | one contract owner and compatibility policy |
 | `O-05` | identity and revocation semantics differ or are absent across device, genome, authority, and runtime layers | versioned identity references, revocation propagation, and stale/wrong-identity fixtures |
 | `O-06` | freeze and restart domains not unified | no-auto-unlock contract and recovery exercise |
 | `O-07` | accepted receipt/state atomicity unproved | deterministic fault-injection evidence |
-| `O-08` | clock and replay domains undefined | canonical time/replay contract and boundary tests |
+| `O-08` | clock, canonicalization, signature, and replay domains undefined | accepted integrity contract and boundary tests |
 | `O-09` | public mirror/private authority topology unresolved | reviewed deployment, redaction, custody, and recovery design |
 | `O-10` | UI review can be confused with approval | signed approval contract and read-only negative tests |
 | `O-11` | path-audit or anomaly score may leak into authorization or attribution | policy non-interference and attribution-separation tests |
@@ -101,3 +103,4 @@ Record date, task, source commit, commands, environment, result (`PASS`, `FAIL`,
 - 2026-07-20 — PR #1 exact-head security evidence recorded. Result applies to the draft implementation checks only; portable product, route, authority, private-store, credential, platform, release, and deployment approval remain blocked.
 - 2026-07-20 — Capability-authority, ADR, and obstruction/gluing documents added to PR #2. Latest coordination edits require a fresh exact-head Documentation run before the documentation reconciliation item may be checked.
 - 2026-07-20 — Added portable device identity, baseline, platform, privacy, lost/replaced-device, attribution-separation, and gluing acceptance work without enabling implementation or authority.
+- 2026-07-20 — Added Portable Security Contract v0, aligned its semantics with Repository `0`, and required it in documentation validation. Contract approval, schemas, fixtures, keys, operational authority, and release remain open.
