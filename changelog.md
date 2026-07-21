@@ -13,6 +13,7 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Defined Repository `1` more precisely as the candidate independently reviewable canonical-state, capability, revocation, receipt, and recovery authority, without activating that authority.
 - 2026-07-20 — Clarified Repository `1` and Repository `0` as the portable first-install security and recovery pair for newly acquired, replaced, reset, recovered, or suspect owned devices.
 - 2026-07-20 — Defined Repository `1` as the proposed independent device-baseline, capability, revocation, checkpoint, and reconciliation authority while Repository `0` performs bootstrap inspection, planning, bounded execution, and evidence production.
+- 2026-07-20 — Added Portable Security Contract v0 as a shared pre-acceptance contract candidate aligned with Repository `0`; no operational authority was enabled.
 
 ### Architecture
 
@@ -28,6 +29,8 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Added ADR-0001 to capture the candidate canonical-state and capability-authority role, required separation of duties, retained route decision, adoption conditions, alternatives, consequences, and rollback path.
 - 2026-07-20 — Added the portable device trust lifecycle: device enrollment, Repository `0` inventory, Repository `1` quarantine and decision, narrow capability, reversible execution, receipt reconciliation, canonical baseline/checkpoint, revocation, supersession, and loss/replacement recovery.
 - 2026-07-20 — Added device identity, baseline-policy identity, platform-profile identity, wrong-device rejection, privacy/retention, and unsupported-state `UNKNOWN` requirements.
+- 2026-07-20 — Aligned both repositories on `0:working → 0:proposal (local only) → versioned envelope → 1:quarantine`, narrowing the route obstruction to contract ownership, schemas, integrity, identity, key custody, and approval.
+- 2026-07-20 — Defined candidate contract identifiers, four-state result semantics, proposal admission, narrow capabilities, receipt reconciliation, revocation, emergency stop, correction, supersession, privacy, canonicalization, versioning, and 18 shared fixture classes.
 
 ### Added
 
@@ -40,6 +43,7 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Added `docs/CAPABILITY_AUTHORITY.md`, `docs/OBSTRUCTION_AND_GLUING.md`, and `docs/adr/0001-canonical-state-and-capability-authority.md`.
 - 2026-07-20 — Expanded `punchlist.md` with authority, route, gluing, pairwise/triple-overlap fixtures, atomicity, private-store, freeze, recovery, identity/revocation, and evidence-correction work.
 - 2026-07-20 — Added `docs/PORTABLE_TRUST_BASELINE.md` covering first-install purpose, canonical records, capability scope, lost/replaced-device recovery, Repository `0` gluing, and security invariants.
+- 2026-07-20 — Added `docs/PORTABLE_SECURITY_CONTRACT_V0.md` and made it a required offline documentation surface.
 
 ### Documentation
 
@@ -49,15 +53,16 @@ All notable product, architecture, implementation, release, and deployment chang
 - 2026-07-20 — Corrected the artifact inventory: only `schemas/state-path-event.schema.json` is observed on the default branch; envelope, receipt, capability, approval, revocation, checkpoint, and execution-receipt schemas remain planned or draft-only unless separately pinned.
 - 2026-07-20 — Expanded offline documentation validation to require the governance coordination files, architecture, capability-authority guide, obstruction ledger, ADR, onboarding, operations, and access-model surface.
 - 2026-07-20 — Aligned the Pages home, task chain, punch list, release plan, and portable baseline with the clarified first-install device-security mission.
+- 2026-07-20 — Aligned Pages, task chain, punch list, release plan, changelog, and validator with Portable Security Contract v0 while preserving all approval and implementation gates.
 
 ### Evidence state
 
 - **Implemented and observed on the default branch:** documentation, one state-path-event schema, and a small Python policy evaluator exist.
 - **Implemented only on draft PR #1:** path-audit model, weighted findings, dispositions, token-assignment preflight safeguards, deployment-readiness documentation, and tests; these remain unmerged and unapproved.
-- **Not verified:** accepted device/baseline/contract schemas, cryptographic signatures, wrong-device and replay/expiry enforcement, append-only durable storage, atomic receipt/state persistence, receipt chaining, checkpoint and loss/replacement recovery, complete local-MVP tests, per-platform controls, privacy policy, threat-model closure, calibrated path scoring, private key custody, and integration behavior.
+- **Not verified:** accepted device/baseline/contract schemas, cryptographic signatures, wrong-device and replay/expiry enforcement, append-only durable storage, atomic receipt/state persistence, receipt chaining, checkpoint and loss/replacement recovery, correction handling, complete local-MVP tests, per-platform controls, privacy policy, threat-model closure, calibrated path scoring, private key custody, and integration behavior.
 - **Proposed only:** secure transport, live capability issuance, device-management adapters, GitHub/webhook adapters, external publication authorization, production deployment, and canonical-state guarantees.
 - 2026-07-20 — PR #1 exact head `0813308061e27e8289ea8f15af7d5ccdc84b4abf` passed Security Readiness run `29667702838`; artifact digest `sha256:2c7ff8100c706051763de1aff69c6f8d1652c418445c1d8894499335fcf67f94`. Passing checks do not resolve portable product, authority, route, device identity, private-store, key-custody, release, or deployment gates.
-- 2026-07-20 — Earlier PR #2 documentation runs apply to superseded heads; the latest portable-bootstrap coordination edits require fresh exact-head validation.
+- 2026-07-20 — The latest Portable Security Contract coordination edits require fresh exact-head documentation validation and shared fixture evidence in both repositories.
 
 ### Security
 
@@ -65,12 +70,13 @@ All notable product, architecture, implementation, release, and deployment chang
 - Required device ownership or explicit authorization, deny-by-default capability issuance, wrong-device rejection, privacy minimization, redaction, no-auto-unlock, independent revocation, and recovery evidence.
 - Required anomaly findings to remain separate from attacker attribution and policy authorization.
 - Required unsupported or unobservable platform state to remain `UNKNOWN` rather than implicitly compliant.
+- Required corrections and supersessions to preserve history, detached artifacts to remain digest-bound, and unsupported contract or canonicalization versions to fail closed.
 
 ### Release
 
-- No release was promoted. A first candidate remains limited to a reproducible local portable trust-core prototype with deterministic tests, per-platform evidence, security/privacy evidence, provenance, checksums, and rollback proof.
-- Draft PR #1 remains excluded from release consideration until portable product/authority approval, route reconciliation, device/baseline identity, contract ownership, private-store/key-custody review, complete local-MVP evidence, recovery, and explicit approval are complete.
-- Documentation completeness improved, but the release remains blocked on product, route, authority, identity, contract, platform, privacy, durable-state, security, recovery, provenance, artifact, and approval requirements.
+- No release was promoted. A first candidate remains limited to a reproducible local portable trust-core prototype with an accepted Portable Security Contract version, deterministic shared tests, per-platform evidence, security/privacy evidence, provenance, checksums, and rollback proof.
+- Draft PR #1 remains excluded from release consideration until portable product/authority approval, contract acceptance, device/baseline identity, contract ownership, private-store/key-custody review, complete local-MVP evidence, recovery, and explicit approval are complete.
+- Documentation completeness improved, but the release remains blocked on product, contract, authority, identity, platform, privacy, durable-state, security, recovery, provenance, artifact, and approval requirements.
 
 ### Deployment
 
