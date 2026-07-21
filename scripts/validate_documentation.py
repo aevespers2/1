@@ -24,6 +24,8 @@ REQUIRED_PATHS = (
     Path("docs/index.md"),
     Path("docs/PROJECT_GUIDE.md"),
     Path("docs/ARCHITECTURE.md"),
+    Path("docs/PORTABLE_TRUST_BASELINE.md"),
+    Path("docs/PORTABLE_SECURITY_CONTRACT_V0.md"),
     Path("docs/CAPABILITY_AUTHORITY.md"),
     Path("docs/OBSTRUCTION_AND_GLUING.md"),
     Path("docs/adr/0001-canonical-state-and-capability-authority.md"),
