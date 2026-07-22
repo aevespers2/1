@@ -1,0 +1,137 @@
+{
+  "baseline": {
+    "attempt": {
+      "attempt_id": "attempt.synthetic.001",
+      "capture_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "created_at": "2026-07-21T22:00:00Z",
+      "device_ref": "device.synthetic.001",
+      "eye_side": "left",
+      "generation": 2,
+      "helper_data_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "profile_id": "iris-profile-synthetic-v0",
+      "schema": "qso.iris-verification-attempt.v0",
+      "status": "proposal-created",
+      "subject_ref": "subject.synthetic.001"
+    },
+    "context": {
+      "current_generation": 2,
+      "expected_device_ref": "device.synthetic.001",
+      "expected_eye_side": "left",
+      "expected_helper_data_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "expected_profile_id": "iris-profile-synthetic-v0",
+      "expected_subject_ref": "subject.synthetic.001",
+      "max_age_seconds": 600,
+      "now": "2026-07-21T22:05:00Z",
+      "recovery_state": "normal",
+      "replacement_profile_id": null,
+      "revoked_profile_ids": [],
+      "seen_attempt_ids": []
+    }
+  },
+  "cases": [
+    {
+      "attempt_overrides": {},
+      "case_id": "valid-baseline",
+      "context_overrides": {},
+      "expected": "accept"
+    },
+    {
+      "attempt_overrides": {
+        "eye_side": "right"
+      },
+      "case_id": "wrong-eye",
+      "context_overrides": {},
+      "error": "eye-side-mismatch",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {
+        "device_ref": "device.synthetic.999"
+      },
+      "case_id": "wrong-device",
+      "context_overrides": {},
+      "error": "device-mismatch",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {
+        "generation": 1
+      },
+      "case_id": "stale-generation",
+      "context_overrides": {},
+      "error": "stale-generation",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {},
+      "case_id": "replayed-attempt",
+      "context_overrides": {
+        "seen_attempt_ids": [
+          "attempt.synthetic.001"
+        ]
+      },
+      "error": "attempt-replay",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {
+        "helper_data_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "case_id": "corrupted-helper-data-digest",
+      "context_overrides": {},
+      "error": "helper-data-digest-mismatch",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {},
+      "case_id": "revoked-profile",
+      "context_overrides": {
+        "revoked_profile_ids": [
+          "iris-profile-synthetic-v0"
+        ]
+      },
+      "error": "profile-revoked",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {},
+      "case_id": "profile-replaced",
+      "context_overrides": {
+        "current_generation": 3,
+        "expected_profile_id": "iris-profile-synthetic-v1",
+        "recovery_state": "recovery-completed",
+        "replacement_profile_id": "iris-profile-synthetic-v1"
+      },
+      "error": "profile-replaced",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {},
+      "case_id": "recovery-required",
+      "context_overrides": {
+        "recovery_state": "recovery-required"
+      },
+      "error": "recovery-not-complete",
+      "expected": "reject"
+    },
+    {
+      "attempt_overrides": {
+        "attempt_id": "attempt.synthetic.002",
+        "generation": 3,
+        "profile_id": "iris-profile-synthetic-v1"
+      },
+      "case_id": "recovery-completed-replacement",
+      "context_overrides": {
+        "current_generation": 3,
+        "expected_profile_id": "iris-profile-synthetic-v1",
+        "recovery_state": "recovery-completed",
+        "replacement_profile_id": "iris-profile-synthetic-v1"
+      },
+      "expected": "accept"
+    }
+  ],
+  "production_key_material_present": false,
+  "raw_biometric_material_present": false,
+  "schema": "qso.iris-synthetic-context-fixtures.v0",
+  "synthetic_only": true
+}
