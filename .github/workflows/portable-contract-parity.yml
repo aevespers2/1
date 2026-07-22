@@ -12,17 +12,20 @@ on:
       - 'fixtures/iris-verifier/crash-recovery-journal-vectors.json'
       - 'fixtures/portfolio-contract-graph-v1.json'
       - 'fixtures/portfolio-responsibility-custody-v1.json'
+      - 'fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64'
       - 'scripts/validate_iris_hostile_fixtures.py'
       - 'scripts/validate_iris_atomic_fixtures.py'
       - 'scripts/validate_iris_journal_fixtures.py'
       - 'scripts/validate_portfolio_graph_fixtures.py'
       - 'scripts/validate_portfolio_responsibility_fixtures.py'
+      - 'scripts/validate_constitutional_appointment_lifecycle.py'
       - 'scripts/validate_portable_contract_profile.py'
       - 'tests/test_iris_hostile_contract.py'
       - 'tests/test_iris_atomic_contract.py'
       - 'tests/test_iris_journal_contract.py'
       - 'tests/test_portfolio_graph_contract.py'
       - 'tests/test_portfolio_responsibility_contract.py'
+      - 'tests/test_constitutional_lifecycle_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   push:
@@ -36,17 +39,20 @@ on:
       - 'fixtures/iris-verifier/crash-recovery-journal-vectors.json'
       - 'fixtures/portfolio-contract-graph-v1.json'
       - 'fixtures/portfolio-responsibility-custody-v1.json'
+      - 'fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64'
       - 'scripts/validate_iris_hostile_fixtures.py'
       - 'scripts/validate_iris_atomic_fixtures.py'
       - 'scripts/validate_iris_journal_fixtures.py'
       - 'scripts/validate_portfolio_graph_fixtures.py'
       - 'scripts/validate_portfolio_responsibility_fixtures.py'
+      - 'scripts/validate_constitutional_appointment_lifecycle.py'
       - 'scripts/validate_portable_contract_profile.py'
       - 'tests/test_iris_hostile_contract.py'
       - 'tests/test_iris_atomic_contract.py'
       - 'tests/test_iris_journal_contract.py'
       - 'tests/test_portfolio_graph_contract.py'
       - 'tests/test_portfolio_responsibility_contract.py'
+      - 'tests/test_constitutional_lifecycle_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   workflow_dispatch:
@@ -70,6 +76,7 @@ jobs:
       EXPECTED_JOURNAL_FIXTURE_SHA256: f255438eab406bba71ab23fad60d34b2a7d3a580e90583e1517d432d8e03b89a
       EXPECTED_GRAPH_FIXTURE_SHA256: 3deaaac5bcc86bdcfd48fdf527d8609a2bc2fd436de8bba1694dc89d150fdbcc
       EXPECTED_RESPONSIBILITY_FIXTURE_SHA256: 299e2542d729bf30fabac1c08d0c2ecd8d21f655d190013419e205fba28ebd8f
+      EXPECTED_LIFECYCLE_FIXTURE_SHA256: be85c05f876a1027fbf960d464fbc919e5896ccdd03dfa7373563c16ab9280fe
 
     steps:
       - name: Check out exact submitted source
@@ -169,6 +176,16 @@ jobs:
             --report evidence/portable-contract/portfolio-responsibility-validation.json \
             2>&1 | tee evidence/portable-contract/portfolio-responsibility-validation.log
 
+      - name: Validate shared constitutional appointment lifecycle independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_constitutional_appointment_lifecycle.py \
+            --fixture fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64 \
+            --expected-sha256 "$EXPECTED_LIFECYCLE_FIXTURE_SHA256" \
+            --report evidence/portable-contract/constitutional-lifecycle-validation.json \
+            2>&1 | tee evidence/portable-contract/constitutional-lifecycle-validation.log
+
       - name: Record exact-head evidence
         if: always()
         shell: bash
@@ -187,13 +204,16 @@ jobs:
             printf 'expected_journal_fixture_sha256=%s\n' "$EXPECTED_JOURNAL_FIXTURE_SHA256"
             printf 'expected_graph_fixture_sha256=%s\n' "$EXPECTED_GRAPH_FIXTURE_SHA256"
             printf 'expected_responsibility_fixture_sha256=%s\n' "$EXPECTED_RESPONSIBILITY_FIXTURE_SHA256"
+            printf 'expected_lifecycle_fixture_sha256=%s\n' "$EXPECTED_LIFECYCLE_FIXTURE_SHA256"
             printf 'independent_iris_validation=true\n'
             printf 'independent_atomic_validation=true\n'
             printf 'independent_journal_validation=true\n'
             printf 'independent_graph_validation=true\n'
             printf 'independent_responsibility_validation=true\n'
+            printf 'independent_lifecycle_validation=true\n'
             printf 'durable_journal_authority=false\n'
             printf 'appointment_authority=false\n'
+            printf 'credential_authority=false\n'
             printf 'operational_authority=false\n'
             printf 'python=%s\n' "$(python --version 2>&1)"
           } > evidence/portable-contract/run-summary.txt
@@ -205,17 +225,20 @@ jobs:
             fixtures/iris-verifier/crash-recovery-journal-vectors.json \
             fixtures/portfolio-contract-graph-v1.json \
             fixtures/portfolio-responsibility-custody-v1.json \
+            fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64 \
             scripts/validate_iris_hostile_fixtures.py \
             scripts/validate_iris_atomic_fixtures.py \
             scripts/validate_iris_journal_fixtures.py \
             scripts/validate_portfolio_graph_fixtures.py \
             scripts/validate_portfolio_responsibility_fixtures.py \
+            scripts/validate_constitutional_appointment_lifecycle.py \
             scripts/validate_portable_contract_profile.py \
             tests/test_iris_hostile_contract.py \
             tests/test_iris_atomic_contract.py \
             tests/test_iris_journal_contract.py \
             tests/test_portfolio_graph_contract.py \
             tests/test_portfolio_responsibility_contract.py \
+            tests/test_constitutional_lifecycle_contract.py \
             tests/test_portable_contract_profile.py \
             .github/workflows/portable-contract-parity.yml \
             > evidence/portable-contract/source.sha256
