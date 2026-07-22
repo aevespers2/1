@@ -1,0 +1,135 @@
+{
+  "fixture_id": "qso.portfolio-contract-graph.v1",
+  "fixture_version": 1,
+  "status": "synthetic-only",
+  "authority_effect": "none",
+  "cases": [
+    {
+      "case_id": "valid-narrowing-linear-chain",
+      "description": "A three-node path preserves exact contract identity, narrowing authority, lifecycle propagation, and rollback closure.",
+      "nodes": ["source", "review", "consumer"],
+      "edges": ["source-to-review", "review-to-consumer"],
+      "flags": {
+        "owners_assigned": true,
+        "exact_contracts": true,
+        "path_agreement": true,
+        "authority_broadening": false,
+        "dependency_closure_complete": true,
+        "correction_closure_complete": true,
+        "recovery_epochs_equal": true,
+        "rollback_route_complete": true
+      },
+      "expected_disposition": "ACCEPTED",
+      "expected_reason_codes": []
+    },
+    {
+      "case_id": "missing-interface",
+      "description": "A required consumer is declared but its producer edge is absent.",
+      "nodes": ["source", "consumer"],
+      "edges": [],
+      "flags": {"required_edge_missing": true},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["MISSING_INTERFACE"]
+    },
+    {
+      "case_id": "self-authorizing-contract",
+      "description": "An operational producer is the sole steward and reviewer of the contract that grants its edge authority.",
+      "nodes": ["producer", "consumer"],
+      "edges": ["producer-to-consumer"],
+      "flags": {"neutral_custody": false, "sole_operational_steward": true},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["SELF_AUTHORIZING_CONTRACT"]
+    },
+    {
+      "case_id": "direct-composed-path-divergence",
+      "description": "A direct mapping and a two-edge mapping produce different canonical meanings.",
+      "nodes": ["a", "b", "c"],
+      "edges": ["a-to-c", "a-to-b", "b-to-c"],
+      "flags": {"path_agreement": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["PATH_DIVERGENCE"]
+    },
+    {
+      "case_id": "cycle-authority-amplification",
+      "description": "A cycle returns a broader scope than entered and has no independent break owner.",
+      "nodes": ["planner", "issuer", "executor"],
+      "edges": ["planner-to-issuer", "issuer-to-executor", "executor-to-planner"],
+      "flags": {"authority_broadening": true, "independent_cycle_break": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["AUTHORITY_AMPLIFICATION", "CYCLE_WITHOUT_BREAK_AUTHORITY"]
+    },
+    {
+      "case_id": "orphaned-output",
+      "description": "A producer emits a record with no consumer, archive, rejection, or retirement route.",
+      "nodes": ["producer"],
+      "edges": [],
+      "flags": {"output_route_complete": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["ORPHANED_OUTPUT"]
+    },
+    {
+      "case_id": "incomplete-dependency-closure",
+      "description": "A required offline consumer is omitted from the declared transitive closure.",
+      "nodes": ["source", "adapter", "online-consumer"],
+      "edges": ["source-to-adapter", "adapter-to-online-consumer"],
+      "flags": {"dependency_closure_complete": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["INCOMPLETE_DEPENDENCY_CLOSURE"]
+    },
+    {
+      "case_id": "correction-propagation-gap",
+      "description": "A correction reaches one branch but not a required cache consumer.",
+      "nodes": ["authority", "primary-consumer", "cache-consumer"],
+      "edges": ["authority-to-primary", "authority-to-cache"],
+      "flags": {"correction_closure_complete": false},
+      "expected_disposition": "PARTIAL",
+      "expected_reason_codes": ["CORRECTION_PROPAGATION_GAP"]
+    },
+    {
+      "case_id": "unreachable-required-node",
+      "description": "A required reconciliation consumer cannot return a current disposition.",
+      "nodes": ["producer", "reconciler"],
+      "edges": ["producer-to-reconciler"],
+      "flags": {"required_node_reachable": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["UNREACHABLE_REQUIRED_NODE"]
+    },
+    {
+      "case_id": "split-recovery-epoch",
+      "description": "Two required consumers report different accepted recovery epochs.",
+      "nodes": ["authority", "consumer-a", "consumer-b"],
+      "edges": ["authority-to-a", "authority-to-b"],
+      "flags": {"recovery_epochs_equal": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["SPLIT_RECOVERY_EPOCH"]
+    },
+    {
+      "case_id": "rollback-dead-end",
+      "description": "A mutating edge has no restoration, compensation, or explicit unknown-state route.",
+      "nodes": ["controller", "target"],
+      "edges": ["controller-to-target"],
+      "flags": {"rollback_route_complete": false},
+      "expected_disposition": "BLOCKED",
+      "expected_reason_codes": ["ROLLBACK_DEAD_END"]
+    },
+    {
+      "case_id": "bounded-optional-adapter",
+      "description": "An optional adapter narrows meaning, is outside the trust root, and has explicit retirement and rollback routes.",
+      "nodes": ["source", "optional-adapter", "consumer"],
+      "edges": ["source-to-adapter", "adapter-to-consumer"],
+      "flags": {
+        "optional": true,
+        "owners_assigned": true,
+        "exact_contracts": true,
+        "authority_broadening": false,
+        "dependency_closure_complete": true,
+        "correction_closure_complete": true,
+        "recovery_epochs_equal": true,
+        "rollback_route_complete": true,
+        "retirement_route_complete": true
+      },
+      "expected_disposition": "ACCEPTED",
+      "expected_reason_codes": []
+    }
+  ]
+}
