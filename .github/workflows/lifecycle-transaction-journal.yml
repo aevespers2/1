@@ -11,6 +11,8 @@ on:
       - 'tests/snapshot_compaction_contract.py'
       - 'scripts/validate_constitutional_lifecycle_backup_restore.py'
       - 'tests/backup_restore_contract.py'
+      - 'scripts/validate_constitutional_lifecycle_restore_staging_multicopy.py'
+      - 'tests/restore_staging_multicopy_contract.py'
       - '.github/workflows/lifecycle-transaction-journal.yml'
   push:
     branches: [main]
@@ -22,6 +24,8 @@ on:
       - 'tests/snapshot_compaction_contract.py'
       - 'scripts/validate_constitutional_lifecycle_backup_restore.py'
       - 'tests/backup_restore_contract.py'
+      - 'scripts/validate_constitutional_lifecycle_restore_staging_multicopy.py'
+      - 'tests/restore_staging_multicopy_contract.py'
       - '.github/workflows/lifecycle-transaction-journal.yml'
   workflow_dispatch:
 
@@ -41,10 +45,13 @@ jobs:
       EXPECTED_FIXTURE_SHA256: 514ff45d55ae889a534a005465f71c1c74997585e10a53de89094d7f07583dd9
       EXPECTED_SNAPSHOT_SHA256: 6b1e0177e73145572286d66e662bf498755cdbf685c05534f6e99a0d903bf140
       EXPECTED_BACKUP_RESTORE_SHA256: 1da592ac85a1880e7b3701860e5c360260622bf4ca36f8eb6c14693a7201a83b
+      EXPECTED_RESTORE_STAGING_MULTICOPY_SHA256: 812f1e5580caa687d30e96e9efed8214d47a131337f82577cfcaa1c27d1e46a2
       SNAPSHOT_SOURCE_URL: https://raw.githubusercontent.com/aevespers2/ALISTAIRE-/8c7685117d4e5ccafae1043c1ff47e9cfb20e5b5/fixtures/constitutional-lifecycle-snapshot-compaction-v1.json
       BACKUP_RESTORE_SOURCE_URL: https://raw.githubusercontent.com/aevespers2/ALISTAIRE-/37e40d1ede2607616dc0f391ccd18b2aa267f9ff/fixtures/constitutional-lifecycle-backup-restore-v1.json
+      RESTORE_STAGING_MULTICOPY_SOURCE_URL: https://raw.githubusercontent.com/aevespers2/ALISTAIRE-/80aabda5c37b7ca065709ce2210207f80009f1be/fixtures/constitutional-lifecycle-restore-staging-multicopy-v1.json
       SNAPSHOT_COMPACTION_FIXTURE: evidence/lifecycle-journal/snapshot-compaction-producer-fixture.json
       BACKUP_RESTORE_FIXTURE: evidence/lifecycle-journal/backup-restore-producer-fixture.json
+      RESTORE_STAGING_MULTICOPY_FIXTURE: evidence/lifecycle-journal/restore-staging-multicopy-producer-fixture.json
     steps:
       - name: Check out exact submitted source
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -145,6 +152,36 @@ jobs:
             --report evidence/lifecycle-journal/backup-restore-validation.json \
             2>&1 | tee evidence/lifecycle-journal/backup-restore-validation.log
 
+      - name: Retrieve immutable producer restore staging corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 --fail --location \
+            --retry 2 --retry-all-errors --max-time 30 \
+            "$RESTORE_STAGING_MULTICOPY_SOURCE_URL" \
+            --output "$RESTORE_STAGING_MULTICOPY_FIXTURE"
+          actual="$(sha256sum "$RESTORE_STAGING_MULTICOPY_FIXTURE" | cut -d' ' -f1)"
+          test "$actual" = "$EXPECTED_RESTORE_STAGING_MULTICOPY_SHA256"
+          printf 'source_url=%s\nsha256=%s\n' "$RESTORE_STAGING_MULTICOPY_SOURCE_URL" "$actual" \
+            > evidence/lifecycle-journal/restore-staging-multicopy-source.txt
+
+      - name: Run independent restore staging and multi-copy regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'restore_staging_multicopy_contract.py' -v \
+            2>&1 | tee evidence/lifecycle-journal/restore-staging-multicopy-tests.log
+
+      - name: Validate producer restore staging corpus independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_constitutional_lifecycle_restore_staging_multicopy.py \
+            --fixture "$RESTORE_STAGING_MULTICOPY_FIXTURE" \
+            --expected-sha256 "$EXPECTED_RESTORE_STAGING_MULTICOPY_SHA256" \
+            --report evidence/lifecycle-journal/restore-staging-multicopy-validation.json \
+            2>&1 | tee evidence/lifecycle-journal/restore-staging-multicopy-validation.log
+
       - name: Record exact-head evidence
         if: always()
         shell: bash
@@ -160,12 +197,16 @@ jobs:
             printf 'expected_fixture_sha256=%s\n' "$EXPECTED_FIXTURE_SHA256"
             printf 'expected_snapshot_sha256=%s\n' "$EXPECTED_SNAPSHOT_SHA256"
             printf 'expected_backup_restore_sha256=%s\n' "$EXPECTED_BACKUP_RESTORE_SHA256"
+            printf 'expected_restore_staging_multicopy_sha256=%s\n' "$EXPECTED_RESTORE_STAGING_MULTICOPY_SHA256"
             printf 'snapshot_source_url=%s\n' "$SNAPSHOT_SOURCE_URL"
             printf 'backup_restore_source_url=%s\n' "$BACKUP_RESTORE_SOURCE_URL"
+            printf 'restore_staging_multicopy_source_url=%s\n' "$RESTORE_STAGING_MULTICOPY_SOURCE_URL"
             printf 'independent_lifecycle_journal_validation=true\n'
             printf 'independent_snapshot_compaction_validation=true\n'
             printf 'independent_backup_restore_validation=true\n'
+            printf 'independent_restore_staging_multicopy_validation=true\n'
             printf 'durable_journal_authority=false\n'
+            printf 'restore_authority=false\n'
             printf 'appointment_authority=false\n'
             printf 'credential_authority=false\n'
             printf 'operational_authority=false\n'
@@ -180,6 +221,8 @@ jobs:
             tests/snapshot_compaction_contract.py \
             scripts/validate_constitutional_lifecycle_backup_restore.py \
             tests/backup_restore_contract.py \
+            scripts/validate_constitutional_lifecycle_restore_staging_multicopy.py \
+            tests/restore_staging_multicopy_contract.py \
             .github/workflows/lifecycle-transaction-journal.yml \
             > evidence/lifecycle-journal/source.sha256
           find evidence/lifecycle-journal -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
