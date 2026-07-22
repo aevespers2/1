@@ -6,7 +6,9 @@ on:
     paths:
       - 'docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md'
       - 'scripts/validate_architecture_review_quorum.py'
+      - 'scripts/verify_architecture_review_quorum_source_identity.py'
       - 'tests/test_architecture_review_quorum_contract.py'
+      - 'tests/test_architecture_review_quorum_source_identity.py'
       - 'taskchain.md'
       - 'punchlist.md'
       - 'release.md'
@@ -17,7 +19,9 @@ on:
     paths:
       - 'docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md'
       - 'scripts/validate_architecture_review_quorum.py'
+      - 'scripts/verify_architecture_review_quorum_source_identity.py'
       - 'tests/test_architecture_review_quorum_contract.py'
+      - 'tests/test_architecture_review_quorum_source_identity.py'
       - 'taskchain.md'
       - 'punchlist.md'
       - 'release.md'
@@ -66,7 +70,9 @@ jobs:
           required=(
             docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md
             scripts/validate_architecture_review_quorum.py
+            scripts/verify_architecture_review_quorum_source_identity.py
             tests/test_architecture_review_quorum_contract.py
+            tests/test_architecture_review_quorum_source_identity.py
             taskchain.md
             punchlist.md
             release.md
@@ -110,12 +116,24 @@ jobs:
             printf 'extension_expected_canonical_sha256=%s\n' "$EXTENSION_CANONICAL_SHA256"
           } | tee evidence/architecture-review-quorum/producer-source.txt
 
+      - name: Verify producer bytes before semantic validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m scripts.verify_architecture_review_quorum_source_identity \
+            --base "$BASE_FIXTURE" \
+            --extension "$EXTENSION_FIXTURE" \
+            --report evidence/architecture-review-quorum/source-identity-validation.json \
+            2>&1 | tee evidence/architecture-review-quorum/source-identity-validation.log
+
       - name: Run independent hostile regressions
         shell: bash
         run: |
           set -euo pipefail
-          python -m unittest tests.test_architecture_review_quorum_contract -v \
-            2>&1 | tee evidence/architecture-review-quorum/tests.log
+          python -m unittest \
+            tests.test_architecture_review_quorum_contract \
+            tests.test_architecture_review_quorum_source_identity \
+            -v 2>&1 | tee evidence/architecture-review-quorum/tests.log
 
       - name: Validate both producer generations independently
         shell: bash
@@ -141,6 +159,8 @@ jobs:
             printf 'python=%s\n' "$(python --version 2>&1)"
             printf 'independent_consumer=true\n'
             printf 'raw_byte_identity_enforced=true\n'
+            printf 'raw_byte_drift_regression=true\n'
+            printf 'raw_gate_precedes_semantic_validation=true\n'
             printf 'canonical_semantic_identity_enforced=true\n'
             printf 'reviewer_appointment=false\n'
             printf 'real_quorum=false\n'
@@ -151,7 +171,9 @@ jobs:
           sha256sum \
             docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md \
             scripts/validate_architecture_review_quorum.py \
+            scripts/verify_architecture_review_quorum_source_identity.py \
             tests/test_architecture_review_quorum_contract.py \
+            tests/test_architecture_review_quorum_source_identity.py \
             taskchain.md punchlist.md release.md changelog.md \
             .github/workflows/architecture-review-quorum.yml \
             > evidence/architecture-review-quorum/consumer-source.sha256
