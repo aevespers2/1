@@ -50,8 +50,12 @@ class IrisJournalContractTests(unittest.TestCase):
             item for item in manifest["cases"]
             if item["case_id"] == "acknowledged-journal-recovers-stale-state"
         )
+        malformed = copy.deepcopy(case["journal_records"][1:])
+        for sequence, record in enumerate(malformed, start=1):
+            record["journal_seq"] = sequence
+            record["record_sha256"] = validator.record_sha256(record)
         with self.assertRaisesRegex(validator.FixtureError, "journal-phase-order-invalid"):
-            validator.reconcile(case["authority_state"], case["journal_records"][1:])
+            validator.reconcile(case["authority_state"], malformed)
         with self.assertRaisesRegex(validator.FixtureError, "journal-record-limit-exceeded"):
             validator.reconcile(case["authority_state"], case["journal_records"] * 6)
 
