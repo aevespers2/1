@@ -10,13 +10,16 @@ on:
       - 'fixtures/iris-verifier/hostile-context-vectors.json'
       - 'fixtures/iris-verifier/atomic-consume-record-vectors.json'
       - 'fixtures/iris-verifier/crash-recovery-journal-vectors.json'
+      - 'fixtures/portfolio-contract-graph-v1.json'
       - 'scripts/validate_iris_hostile_fixtures.py'
       - 'scripts/validate_iris_atomic_fixtures.py'
       - 'scripts/validate_iris_journal_fixtures.py'
+      - 'scripts/validate_portfolio_graph_fixtures.py'
       - 'scripts/validate_portable_contract_profile.py'
       - 'tests/test_iris_hostile_contract.py'
       - 'tests/test_iris_atomic_contract.py'
       - 'tests/test_iris_journal_contract.py'
+      - 'tests/test_portfolio_graph_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   push:
@@ -28,13 +31,16 @@ on:
       - 'fixtures/iris-verifier/hostile-context-vectors.json'
       - 'fixtures/iris-verifier/atomic-consume-record-vectors.json'
       - 'fixtures/iris-verifier/crash-recovery-journal-vectors.json'
+      - 'fixtures/portfolio-contract-graph-v1.json'
       - 'scripts/validate_iris_hostile_fixtures.py'
       - 'scripts/validate_iris_atomic_fixtures.py'
       - 'scripts/validate_iris_journal_fixtures.py'
+      - 'scripts/validate_portfolio_graph_fixtures.py'
       - 'scripts/validate_portable_contract_profile.py'
       - 'tests/test_iris_hostile_contract.py'
       - 'tests/test_iris_atomic_contract.py'
       - 'tests/test_iris_journal_contract.py'
+      - 'tests/test_portfolio_graph_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   workflow_dispatch:
@@ -56,6 +62,7 @@ jobs:
       EXPECTED_IRIS_FIXTURE_SHA256: 677a66f65bde813e122c6493b5421a06dadf867cfa029a05f3bc610564f50006
       EXPECTED_ATOMIC_FIXTURE_SHA256: 5557b6eeec96a2655410a9a60bfddec9c981a10762f0f02eb6b91f07e0379fc5
       EXPECTED_JOURNAL_FIXTURE_SHA256: f255438eab406bba71ab23fad60d34b2a7d3a580e90583e1517d432d8e03b89a
+      EXPECTED_GRAPH_FIXTURE_SHA256: 3deaaac5bcc86bdcfd48fdf527d8609a2bc2fd436de8bba1694dc89d150fdbcc
 
     steps:
       - name: Check out exact submitted source
@@ -135,6 +142,16 @@ jobs:
             --report evidence/portable-contract/iris-journal-validation.json \
             2>&1 | tee evidence/portable-contract/iris-journal-validation.log
 
+      - name: Validate shared portfolio graph corpus independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_portfolio_graph_fixtures.py \
+            --fixture fixtures/portfolio-contract-graph-v1.json \
+            --expected-sha256 "$EXPECTED_GRAPH_FIXTURE_SHA256" \
+            --report evidence/portable-contract/portfolio-graph-validation.json \
+            2>&1 | tee evidence/portable-contract/portfolio-graph-validation.log
+
       - name: Record exact-head evidence
         if: always()
         shell: bash
@@ -151,9 +168,11 @@ jobs:
             printf 'expected_iris_fixture_sha256=%s\n' "$EXPECTED_IRIS_FIXTURE_SHA256"
             printf 'expected_atomic_fixture_sha256=%s\n' "$EXPECTED_ATOMIC_FIXTURE_SHA256"
             printf 'expected_journal_fixture_sha256=%s\n' "$EXPECTED_JOURNAL_FIXTURE_SHA256"
+            printf 'expected_graph_fixture_sha256=%s\n' "$EXPECTED_GRAPH_FIXTURE_SHA256"
             printf 'independent_iris_validation=true\n'
             printf 'independent_atomic_validation=true\n'
             printf 'independent_journal_validation=true\n'
+            printf 'independent_graph_validation=true\n'
             printf 'durable_journal_authority=false\n'
             printf 'operational_authority=false\n'
             printf 'python=%s\n' "$(python --version 2>&1)"
@@ -164,13 +183,16 @@ jobs:
             fixtures/iris-verifier/hostile-context-vectors.json \
             fixtures/iris-verifier/atomic-consume-record-vectors.json \
             fixtures/iris-verifier/crash-recovery-journal-vectors.json \
+            fixtures/portfolio-contract-graph-v1.json \
             scripts/validate_iris_hostile_fixtures.py \
             scripts/validate_iris_atomic_fixtures.py \
             scripts/validate_iris_journal_fixtures.py \
+            scripts/validate_portfolio_graph_fixtures.py \
             scripts/validate_portable_contract_profile.py \
             tests/test_iris_hostile_contract.py \
             tests/test_iris_atomic_contract.py \
             tests/test_iris_journal_contract.py \
+            tests/test_portfolio_graph_contract.py \
             tests/test_portable_contract_profile.py \
             .github/workflows/portable-contract-parity.yml \
             > evidence/portable-contract/source.sha256
