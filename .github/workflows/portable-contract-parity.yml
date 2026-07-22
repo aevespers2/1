@@ -8,9 +8,12 @@ on:
       - 'docs/portable-security-contract-v0.md'
       - 'docs/PORTABLE_SECURITY_CONTRACT_V0.md'
       - 'fixtures/iris-verifier/hostile-context-vectors.json'
+      - 'fixtures/iris-verifier/atomic-consume-record-vectors.json'
       - 'scripts/validate_iris_hostile_fixtures.py'
+      - 'scripts/validate_iris_atomic_fixtures.py'
       - 'scripts/validate_portable_contract_profile.py'
       - 'tests/test_iris_hostile_contract.py'
+      - 'tests/test_iris_atomic_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   push:
@@ -20,9 +23,12 @@ on:
       - 'docs/portable-security-contract-v0.md'
       - 'docs/PORTABLE_SECURITY_CONTRACT_V0.md'
       - 'fixtures/iris-verifier/hostile-context-vectors.json'
+      - 'fixtures/iris-verifier/atomic-consume-record-vectors.json'
       - 'scripts/validate_iris_hostile_fixtures.py'
+      - 'scripts/validate_iris_atomic_fixtures.py'
       - 'scripts/validate_portable_contract_profile.py'
       - 'tests/test_iris_hostile_contract.py'
+      - 'tests/test_iris_atomic_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   workflow_dispatch:
@@ -42,6 +48,7 @@ jobs:
       SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       EXPECTED_PROFILE_SHA256: 2aa1016828fe5797d4bedd1fbaf80a58dbb018d34df23d52d6de23bb8721f619
       EXPECTED_IRIS_FIXTURE_SHA256: 677a66f65bde813e122c6493b5421a06dadf867cfa029a05f3bc610564f50006
+      EXPECTED_ATOMIC_FIXTURE_SHA256: 5557b6eeec96a2655410a9a60bfddec9c981a10762f0f02eb6b91f07e0379fc5
 
     steps:
       - name: Check out exact submitted source
@@ -101,6 +108,16 @@ jobs:
             --report evidence/portable-contract/iris-hostile-validation.json \
             2>&1 | tee evidence/portable-contract/iris-hostile-validation.log
 
+      - name: Validate shared atomic consume-record corpus independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_iris_atomic_fixtures.py \
+            --fixture fixtures/iris-verifier/atomic-consume-record-vectors.json \
+            --expected-sha256 "$EXPECTED_ATOMIC_FIXTURE_SHA256" \
+            --report evidence/portable-contract/iris-atomic-validation.json \
+            2>&1 | tee evidence/portable-contract/iris-atomic-validation.log
+
       - name: Record exact-head evidence
         if: always()
         shell: bash
@@ -115,7 +132,9 @@ jobs:
             printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
             printf 'expected_profile_sha256=%s\n' "$EXPECTED_PROFILE_SHA256"
             printf 'expected_iris_fixture_sha256=%s\n' "$EXPECTED_IRIS_FIXTURE_SHA256"
+            printf 'expected_atomic_fixture_sha256=%s\n' "$EXPECTED_ATOMIC_FIXTURE_SHA256"
             printf 'independent_iris_validation=true\n'
+            printf 'independent_atomic_validation=true\n'
             printf 'operational_authority=false\n'
             printf 'python=%s\n' "$(python --version 2>&1)"
           } > evidence/portable-contract/run-summary.txt
@@ -123,9 +142,12 @@ jobs:
           sha256sum \
             contracts/portable-security-contract-v0.profile.json \
             fixtures/iris-verifier/hostile-context-vectors.json \
+            fixtures/iris-verifier/atomic-consume-record-vectors.json \
             scripts/validate_iris_hostile_fixtures.py \
+            scripts/validate_iris_atomic_fixtures.py \
             scripts/validate_portable_contract_profile.py \
             tests/test_iris_hostile_contract.py \
+            tests/test_iris_atomic_contract.py \
             tests/test_portable_contract_profile.py \
             .github/workflows/portable-contract-parity.yml \
             > evidence/portable-contract/source.sha256
