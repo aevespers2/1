@@ -7,7 +7,10 @@ on:
       - 'contracts/portable-security-contract-v0.profile.json'
       - 'docs/portable-security-contract-v0.md'
       - 'docs/PORTABLE_SECURITY_CONTRACT_V0.md'
+      - 'fixtures/iris-verifier/hostile-context-vectors.json'
+      - 'scripts/validate_iris_hostile_fixtures.py'
       - 'scripts/validate_portable_contract_profile.py'
+      - 'tests/test_iris_hostile_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   push:
@@ -16,7 +19,10 @@ on:
       - 'contracts/portable-security-contract-v0.profile.json'
       - 'docs/portable-security-contract-v0.md'
       - 'docs/PORTABLE_SECURITY_CONTRACT_V0.md'
+      - 'fixtures/iris-verifier/hostile-context-vectors.json'
+      - 'scripts/validate_iris_hostile_fixtures.py'
       - 'scripts/validate_portable_contract_profile.py'
+      - 'tests/test_iris_hostile_contract.py'
       - 'tests/test_portable_contract_profile.py'
       - '.github/workflows/portable-contract-parity.yml'
   workflow_dispatch:
@@ -35,6 +41,7 @@ jobs:
     env:
       SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       EXPECTED_PROFILE_SHA256: 2aa1016828fe5797d4bedd1fbaf80a58dbb018d34df23d52d6de23bb8721f619
+      EXPECTED_IRIS_FIXTURE_SHA256: 677a66f65bde813e122c6493b5421a06dadf867cfa029a05f3bc610564f50006
 
     steps:
       - name: Check out exact submitted source
@@ -57,12 +64,12 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run parity regression tests
+      - name: Run contract regression tests
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p evidence/portable-contract
-          python -m unittest discover -s tests -p 'test_portable_contract_profile.py' -v \
+          python -m unittest discover -s tests -p 'test_*contract*.py' -v \
             2>&1 | tee evidence/portable-contract/tests.log
 
       - name: Validate semantic profile and contract document
@@ -84,6 +91,16 @@ jobs:
             --report evidence/portable-contract/profile-validation.json \
             2>&1 | tee evidence/portable-contract/profile-validation.log
 
+      - name: Validate shared iris hostile-context corpus independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_iris_hostile_fixtures.py \
+            --fixture fixtures/iris-verifier/hostile-context-vectors.json \
+            --expected-sha256 "$EXPECTED_IRIS_FIXTURE_SHA256" \
+            --report evidence/portable-contract/iris-hostile-validation.json \
+            2>&1 | tee evidence/portable-contract/iris-hostile-validation.log
+
       - name: Record exact-head evidence
         if: always()
         shell: bash
@@ -97,12 +114,18 @@ jobs:
             printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
             printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
             printf 'expected_profile_sha256=%s\n' "$EXPECTED_PROFILE_SHA256"
+            printf 'expected_iris_fixture_sha256=%s\n' "$EXPECTED_IRIS_FIXTURE_SHA256"
+            printf 'independent_iris_validation=true\n'
+            printf 'operational_authority=false\n'
             printf 'python=%s\n' "$(python --version 2>&1)"
           } > evidence/portable-contract/run-summary.txt
           git status --porcelain > evidence/portable-contract/worktree.txt
           sha256sum \
             contracts/portable-security-contract-v0.profile.json \
+            fixtures/iris-verifier/hostile-context-vectors.json \
+            scripts/validate_iris_hostile_fixtures.py \
             scripts/validate_portable_contract_profile.py \
+            tests/test_iris_hostile_contract.py \
             tests/test_portable_contract_profile.py \
             .github/workflows/portable-contract-parity.yml \
             > evidence/portable-contract/source.sha256
