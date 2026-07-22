@@ -1,0 +1,455 @@
+{
+  "schema": "alistaire.constitutional-lifecycle-transaction-journal.corpus.v1",
+  "profile_version": "1.0.0",
+  "status": "synthetic_only_non_operational",
+  "cases": [
+    {
+      "case_id": "replacement-committed-and-acknowledged",
+      "description": "A replacement advances exactly one generation only after commit and matching propagation acknowledgment.",
+      "operation": "replacement",
+      "current_state": "active",
+      "current_generation": 1,
+      "current_credential_generation": 3,
+      "operation_generation": 2,
+      "operation_credential_generation": 3,
+      "journal_phase": "acknowledged",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-replace-2",
+      "prior_transaction_ids": [],
+      "ack_generation": 2,
+      "acknowledged_generations": [
+        1
+      ],
+      "sequence_start": 40,
+      "sequence_values": [
+        41,
+        42,
+        43
+      ],
+      "expected_state": "replaced",
+      "expected_reason": "replacement_committed",
+      "expected_effect": "record_only",
+      "expected_generation": 2,
+      "expected_credential_generation": 3
+    },
+    {
+      "case_id": "concurrent-replacement-conflict",
+      "description": "Two replacements targeting the same next generation fail closed without choosing a winner.",
+      "operation": "replacement",
+      "current_state": "active",
+      "current_generation": 4,
+      "current_credential_generation": 7,
+      "operation_generation": 5,
+      "operation_credential_generation": 7,
+      "journal_phase": "prepared",
+      "interruption": "none",
+      "concurrent_operation": "replacement",
+      "concurrent_generation": 5,
+      "transaction_id": "tx-replace-5-a",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        4
+      ],
+      "sequence_start": 80,
+      "sequence_values": [
+        81,
+        82
+      ],
+      "expected_state": "active",
+      "expected_reason": "concurrent_replacement_conflict",
+      "expected_effect": "synthetic_bounded_active",
+      "expected_generation": 4,
+      "expected_credential_generation": 7
+    },
+    {
+      "case_id": "suspension-wins-over-appeal-race",
+      "description": "A same-generation suspension and appeal race preserves suspension while recording the pending appeal.",
+      "operation": "suspension",
+      "current_state": "active",
+      "current_generation": 8,
+      "current_credential_generation": 2,
+      "operation_generation": 8,
+      "operation_credential_generation": 2,
+      "journal_phase": "committed",
+      "interruption": "none",
+      "concurrent_operation": "appeal",
+      "concurrent_generation": 8,
+      "transaction_id": "tx-suspend-8",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        8
+      ],
+      "sequence_start": 100,
+      "sequence_values": [
+        101,
+        102
+      ],
+      "expected_state": "suspended_appeal_pending",
+      "expected_reason": "suspension_precedence",
+      "expected_effect": "none",
+      "expected_generation": 8,
+      "expected_credential_generation": 2
+    },
+    {
+      "case_id": "appeal-without-suspension",
+      "description": "A current-generation appeal records a pending review without restoring or widening authority.",
+      "operation": "appeal",
+      "current_state": "suspended",
+      "current_generation": 3,
+      "current_credential_generation": 1,
+      "operation_generation": 3,
+      "operation_credential_generation": 1,
+      "journal_phase": "committed",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-appeal-3",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        3
+      ],
+      "sequence_start": 20,
+      "sequence_values": [
+        21
+      ],
+      "expected_state": "appeal_pending",
+      "expected_reason": "appeal_recorded",
+      "expected_effect": "none",
+      "expected_generation": 3,
+      "expected_credential_generation": 1
+    },
+    {
+      "case_id": "late-ack-after-generation-change",
+      "description": "An acknowledgment for an earlier appointment generation cannot complete the current pending propagation.",
+      "operation": "propagation_ack",
+      "current_state": "pending_propagation",
+      "current_generation": 6,
+      "current_credential_generation": 4,
+      "operation_generation": 6,
+      "operation_credential_generation": 4,
+      "journal_phase": "acknowledged",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-ack-old-5",
+      "prior_transaction_ids": [],
+      "ack_generation": 5,
+      "acknowledged_generations": [
+        4
+      ],
+      "sequence_start": 60,
+      "sequence_values": [
+        61
+      ],
+      "expected_state": "pending_propagation",
+      "expected_reason": "stale_ack_rejected",
+      "expected_effect": "none",
+      "expected_generation": 6,
+      "expected_credential_generation": 4
+    },
+    {
+      "case_id": "replayed-acknowledgment-idempotent",
+      "description": "A replayed acknowledgment for an already acknowledged current generation is an idempotent no-op.",
+      "operation": "propagation_ack",
+      "current_state": "active",
+      "current_generation": 9,
+      "current_credential_generation": 5,
+      "operation_generation": 9,
+      "operation_credential_generation": 5,
+      "journal_phase": "acknowledged",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-ack-retry-9",
+      "prior_transaction_ids": [],
+      "ack_generation": 9,
+      "acknowledged_generations": [
+        9
+      ],
+      "sequence_start": 110,
+      "sequence_values": [
+        111
+      ],
+      "expected_state": "active",
+      "expected_reason": "acknowledgment_idempotent",
+      "expected_effect": "synthetic_bounded_active",
+      "expected_generation": 9,
+      "expected_credential_generation": 5
+    },
+    {
+      "case_id": "credential-generation-rotation",
+      "description": "A credential-generation change leaves the appointment pending until the new binding is propagated.",
+      "operation": "credential_rotation",
+      "current_state": "active",
+      "current_generation": 10,
+      "current_credential_generation": 2,
+      "operation_generation": 10,
+      "operation_credential_generation": 3,
+      "journal_phase": "committed",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-credential-3",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        10
+      ],
+      "sequence_start": 120,
+      "sequence_values": [
+        121,
+        122
+      ],
+      "expected_state": "pending_propagation",
+      "expected_reason": "credential_rotation_pending_ack",
+      "expected_effect": "none",
+      "expected_generation": 10,
+      "expected_credential_generation": 3
+    },
+    {
+      "case_id": "rollback-interrupted-before-commit",
+      "description": "An interruption before rollback commit preserves the prior generation and authority state exactly.",
+      "operation": "rollback",
+      "current_state": "active",
+      "current_generation": 7,
+      "current_credential_generation": 6,
+      "operation_generation": 6,
+      "operation_credential_generation": 6,
+      "journal_phase": "none",
+      "interruption": "before_commit",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-rollback-6-a",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        7
+      ],
+      "sequence_start": 70,
+      "sequence_values": [
+        71
+      ],
+      "expected_state": "active",
+      "expected_reason": "prior_state_preserved",
+      "expected_effect": "synthetic_bounded_active",
+      "expected_generation": 7,
+      "expected_credential_generation": 6
+    },
+    {
+      "case_id": "rollback-interrupted-after-prepare",
+      "description": "Recovery discards an uncommitted prepared rollback and preserves the prior verified state.",
+      "operation": "recovery",
+      "current_state": "active",
+      "current_generation": 7,
+      "current_credential_generation": 6,
+      "operation_generation": 6,
+      "operation_credential_generation": 6,
+      "journal_phase": "prepared",
+      "interruption": "after_prepare",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-rollback-6-b",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        7
+      ],
+      "sequence_start": 72,
+      "sequence_values": [
+        73,
+        74
+      ],
+      "expected_state": "active",
+      "expected_reason": "prepared_state_discarded",
+      "expected_effect": "synthetic_bounded_active",
+      "expected_generation": 7,
+      "expected_credential_generation": 6
+    },
+    {
+      "case_id": "rollback-committed-before-ack",
+      "description": "A committed rollback survives acknowledgment loss and remains pending propagation at the restored generation.",
+      "operation": "rollback",
+      "current_state": "active",
+      "current_generation": 7,
+      "current_credential_generation": 6,
+      "operation_generation": 6,
+      "operation_credential_generation": 6,
+      "journal_phase": "committed",
+      "interruption": "after_commit_before_ack",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-rollback-6-c",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        7
+      ],
+      "sequence_start": 75,
+      "sequence_values": [
+        76,
+        77
+      ],
+      "expected_state": "rolled_back_pending_ack",
+      "expected_reason": "rollback_committed_unacknowledged",
+      "expected_effect": "restoration_only",
+      "expected_generation": 6,
+      "expected_credential_generation": 6
+    },
+    {
+      "case_id": "recovery-preserves-committed-rollback",
+      "description": "Deterministic recovery preserves a committed rollback and never resurrects the superseded generation.",
+      "operation": "recovery",
+      "current_state": "active",
+      "current_generation": 7,
+      "current_credential_generation": 6,
+      "operation_generation": 6,
+      "operation_credential_generation": 6,
+      "journal_phase": "committed",
+      "interruption": "after_commit_before_ack",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-rollback-6-d",
+      "prior_transaction_ids": [
+        "tx-other"
+      ],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        7
+      ],
+      "sequence_start": 77,
+      "sequence_values": [
+        78,
+        79
+      ],
+      "expected_state": "rolled_back_pending_ack",
+      "expected_reason": "recovery_preserved_committed_state",
+      "expected_effect": "restoration_only",
+      "expected_generation": 6,
+      "expected_credential_generation": 6
+    },
+    {
+      "case_id": "corrupted-journal-quarantined",
+      "description": "A corrupted journal is quarantined rather than guessed, repaired silently, or partially replayed.",
+      "operation": "recovery",
+      "current_state": "suspended",
+      "current_generation": 11,
+      "current_credential_generation": 4,
+      "operation_generation": 10,
+      "operation_credential_generation": 4,
+      "journal_phase": "corrupt",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-corrupt-11",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        11
+      ],
+      "sequence_start": 130,
+      "sequence_values": [
+        131
+      ],
+      "expected_state": "quarantined",
+      "expected_reason": "journal_corrupt",
+      "expected_effect": "none",
+      "expected_generation": 11,
+      "expected_credential_generation": 4
+    },
+    {
+      "case_id": "journal-sequence-gap-quarantined",
+      "description": "A missing journal sequence number causes quarantine before any lifecycle transition is applied.",
+      "operation": "replacement",
+      "current_state": "active",
+      "current_generation": 2,
+      "current_credential_generation": 2,
+      "operation_generation": 3,
+      "operation_credential_generation": 2,
+      "journal_phase": "committed",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-gap-3",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        2
+      ],
+      "sequence_start": 10,
+      "sequence_values": [
+        11,
+        13
+      ],
+      "expected_state": "quarantined",
+      "expected_reason": "journal_sequence_gap",
+      "expected_effect": "none",
+      "expected_generation": 2,
+      "expected_credential_generation": 2
+    },
+    {
+      "case_id": "duplicate-transaction-id-quarantined",
+      "description": "A transaction identifier already present in the journal is quarantined before replay can mutate state.",
+      "operation": "suspension",
+      "current_state": "active",
+      "current_generation": 5,
+      "current_credential_generation": 8,
+      "operation_generation": 5,
+      "operation_credential_generation": 8,
+      "journal_phase": "committed",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-duplicate-5",
+      "prior_transaction_ids": [
+        "tx-duplicate-5"
+      ],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        5
+      ],
+      "sequence_start": 50,
+      "sequence_values": [
+        51
+      ],
+      "expected_state": "quarantined",
+      "expected_reason": "duplicate_transaction_id",
+      "expected_effect": "none",
+      "expected_generation": 5,
+      "expected_credential_generation": 8
+    },
+    {
+      "case_id": "stale-suspension-after-replacement",
+      "description": "A suspension targeting a superseded generation is rejected without undoing the verified replacement.",
+      "operation": "suspension",
+      "current_state": "replaced",
+      "current_generation": 12,
+      "current_credential_generation": 9,
+      "operation_generation": 11,
+      "operation_credential_generation": 9,
+      "journal_phase": "committed",
+      "interruption": "none",
+      "concurrent_operation": null,
+      "concurrent_generation": null,
+      "transaction_id": "tx-stale-suspend-11",
+      "prior_transaction_ids": [],
+      "ack_generation": null,
+      "acknowledged_generations": [
+        12
+      ],
+      "sequence_start": 140,
+      "sequence_values": [
+        141
+      ],
+      "expected_state": "replaced",
+      "expected_reason": "stale_operation_rejected",
+      "expected_effect": "record_only",
+      "expected_generation": 12,
+      "expected_credential_generation": 9
+    }
+  ]
+}
