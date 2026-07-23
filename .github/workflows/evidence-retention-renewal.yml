@@ -4,9 +4,12 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'contracts/evidence-retention-source-tuple-v1.json'
       - 'docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md'
       - 'docs/index.md'
+      - 'scripts/verify_evidence_retention_source_tuple.py'
       - 'scripts/validate_evidence_retention_renewal.py'
+      - 'tests/test_evidence_retention_source_tuple.py'
       - 'tests/test_evidence_retention_renewal_contract.py'
       - '.github/workflows/evidence-retention-renewal.yml'
       - 'taskchain.md'
@@ -16,9 +19,12 @@ on:
   push:
     branches: [main]
     paths:
+      - 'contracts/evidence-retention-source-tuple-v1.json'
       - 'docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md'
       - 'docs/index.md'
+      - 'scripts/verify_evidence_retention_source_tuple.py'
       - 'scripts/validate_evidence_retention_renewal.py'
+      - 'tests/test_evidence_retention_source_tuple.py'
       - 'tests/test_evidence_retention_renewal_contract.py'
       - '.github/workflows/evidence-retention-renewal.yml'
   workflow_dispatch:
@@ -41,6 +47,7 @@ jobs:
       EXPECTED_SHA256: 9d4c78fc8c9b54a91bd272a4bc929dc368d3af23b62cf2eec1d833b9a7ec449f
       PRODUCER_URL: https://raw.githubusercontent.com/aevespers2/qso-field.github.io/155437912906a0119a087d63bf4ed889368a4a9f/fixtures/evidence-retention-renewal-v1.json
       EVIDENCE_RETENTION_FIXTURE: evidence/retention/producer-fixture.json
+      SOURCE_TUPLE: contracts/evidence-retention-source-tuple-v1.json
 
     steps:
       - name: Check out exact submitted source
@@ -57,9 +64,12 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
           test -z "$(git status --porcelain)"
+          test -f "$SOURCE_TUPLE"
           test -f docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md
           test -f docs/index.md
+          test -f scripts/verify_evidence_retention_source_tuple.py
           test -f scripts/validate_evidence_retention_renewal.py
+          test -f tests/test_evidence_retention_source_tuple.py
           test -f tests/test_evidence_retention_renewal_contract.py
 
       - name: Set up Python
@@ -87,6 +97,25 @@ jobs:
             printf 'expected_sha256=%s\n' "$EXPECTED_SHA256"
             printf 'actual_sha256=%s\n' "$actual_sha256"
           } | tee evidence/retention/producer-source.txt
+
+      - name: Test source and evidence tuple boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest tests.test_evidence_retention_source_tuple -v \
+            2>&1 | tee evidence/retention/source-tuple-tests.log
+
+      - name: Verify source tuple before semantic parsing
+        shell: bash
+        run: |
+          set -euo pipefail
+          as_of="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          python scripts/verify_evidence_retention_source_tuple.py \
+            --tuple "$SOURCE_TUPLE" \
+            --fixture "$EVIDENCE_RETENTION_FIXTURE" \
+            --as-of "$as_of" \
+            --report evidence/retention/source-tuple-validation.json \
+            2>&1 | tee evidence/retention/source-tuple-validation.log
 
       - name: Run independent hostile regressions
         shell: bash
@@ -117,6 +146,7 @@ jobs:
             printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
             printf 'python=%s\n' "$(python --version 2>&1)"
             printf 'independent_consumer=true\n'
+            printf 'source_tuple_verified_before_semantic_parse=true\n'
             printf 'archive_operation=false\n'
             printf 'renewal_authority=false\n'
             printf 'deletion_authority=false\n'
@@ -124,9 +154,12 @@ jobs:
             printf 'operational_authority=false\n'
           } | tee evidence/retention/source-identity.txt
           sha256sum \
+            contracts/evidence-retention-source-tuple-v1.json \
             docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md \
             docs/index.md \
+            scripts/verify_evidence_retention_source_tuple.py \
             scripts/validate_evidence_retention_renewal.py \
+            tests/test_evidence_retention_source_tuple.py \
             tests/test_evidence_retention_renewal_contract.py \
             .github/workflows/evidence-retention-renewal.yml \
             > evidence/retention/consumer-source.sha256
