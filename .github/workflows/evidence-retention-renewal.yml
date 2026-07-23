@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md'
+      - 'docs/index.md'
       - 'scripts/validate_evidence_retention_renewal.py'
       - 'tests/test_evidence_retention_renewal_contract.py'
       - '.github/workflows/evidence-retention-renewal.yml'
@@ -16,6 +17,7 @@ on:
     branches: [main]
     paths:
       - 'docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md'
+      - 'docs/index.md'
       - 'scripts/validate_evidence_retention_renewal.py'
       - 'tests/test_evidence_retention_renewal_contract.py'
       - '.github/workflows/evidence-retention-renewal.yml'
@@ -56,6 +58,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
           test -z "$(git status --porcelain)"
           test -f docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md
+          test -f docs/index.md
           test -f scripts/validate_evidence_retention_renewal.py
           test -f tests/test_evidence_retention_renewal_contract.py
 
@@ -122,6 +125,7 @@ jobs:
           } | tee evidence/retention/source-identity.txt
           sha256sum \
             docs/EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md \
+            docs/index.md \
             scripts/validate_evidence_retention_renewal.py \
             tests/test_evidence_retention_renewal_contract.py \
             .github/workflows/evidence-retention-renewal.yml \
