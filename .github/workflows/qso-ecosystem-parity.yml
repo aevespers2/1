@@ -115,7 +115,8 @@ jobs:
           } | tee evidence/qso-ecosystem/source-identity.txt
           sha256sum contracts/qso-ecosystem-source-tuple-v1.json docs/QSO_ECOSYSTEM_CONFORMANCE.md scripts/validate_qso_ecosystem_independent.py tests/test_qso_ecosystem_independent.py .github/workflows/qso-ecosystem-parity.yml > evidence/qso-ecosystem/consumer-source.sha256
           find evidence/qso-ecosystem -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > evidence/qso-ecosystem/SHA256SUMS
-          test -z "$(git status --porcelain)"
+          git diff --exit-code
+          git diff --cached --exit-code
 
       - name: Upload retained evidence
         if: always()
