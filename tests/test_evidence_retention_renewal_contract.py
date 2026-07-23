@@ -196,8 +196,12 @@ class EvidenceRetentionRenewalContractTests(unittest.TestCase):
 
     def test_reason_order_drift_rejected(self):
         payload = self.payload()
-        target = next(case for case in payload["cases"] if len(case["expected"]["reasons"]) > 1)
-        target["expected"]["reasons"].reverse()
+        target = payload["cases"][0]
+        target["facts"]["artifact_digest_verified"] = False
+        target["expected"]["reasons"] = [
+            "ARTIFACT_DIGEST_UNVERIFIED",
+            "SOURCE_IDENTITY_UNKNOWN",
+        ]
         self.assert_rejected(payload)
 
     def test_missing_case_rejected(self):
