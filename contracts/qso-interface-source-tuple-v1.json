@@ -1,0 +1,23 @@
+{
+  "contract_id": "QSO-INTERFACE-COMPATIBILITY-001",
+  "version": "1.0.0",
+  "producer": {
+    "repository": "aevespers2/QSO-FABRIC",
+    "pull_request": 21,
+    "head_sha": "25036a5cfcea79e204a4660ddd1af09c054935b1",
+    "fixture_path": "fixtures/qso-interface-compatibility-v1.json",
+    "fixture_git_blob": "143b80448cb4623682669ab8e6a9599239dd5847",
+    "workflow_run": 29986841042,
+    "artifact_id": 8555344357,
+    "artifact_digest": "sha256:09be1df24f4ab8b08708dd521c6720f4c95195d3e4379cecaad6d1a4b026a238",
+    "evidence_expires_at": "2026-10-21T06:59:56Z"
+  },
+  "consumer": {
+    "repository": "aevespers2/1",
+    "validator_path": "scripts/validate_qso_interface_independent.py",
+    "test_path": "tests/test_qso_interface_independent.py",
+    "workflow_path": ".github/workflows/qso-interface-parity.yml",
+    "documentation_path": "docs/QSO_INTERFACE_CONFORMANCE.md"
+  },
+  "authority_effect": "none"
+}

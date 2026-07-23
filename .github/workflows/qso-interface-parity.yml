@@ -1,0 +1,189 @@
+name: QSO Interface Independent Parity
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/qso-interface-source-tuple-v1.json'
+      - 'scripts/validate_qso_interface_independent.py'
+      - 'tests/test_qso_interface_independent.py'
+      - 'docs/QSO_INTERFACE_CONFORMANCE.md'
+      - '.github/workflows/qso-interface-parity.yml'
+      - 'README.md'
+      - 'docs/index.md'
+      - 'taskchain.md'
+      - 'punchlist.md'
+      - 'release.md'
+      - 'changelog.md'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/qso-interface-source-tuple-v1.json'
+      - 'scripts/validate_qso_interface_independent.py'
+      - 'tests/test_qso_interface_independent.py'
+      - 'docs/QSO_INTERFACE_CONFORMANCE.md'
+      - '.github/workflows/qso-interface-parity.yml'
+      - 'README.md'
+      - 'docs/index.md'
+      - 'taskchain.md'
+      - 'punchlist.md'
+      - 'release.md'
+      - 'changelog.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qso-interface-parity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  independent-consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PRODUCER_HEAD: 25036a5cfcea79e204a4660ddd1af09c054935b1
+      PRODUCER_FIXTURE_URL: https://raw.githubusercontent.com/aevespers2/QSO-FABRIC/25036a5cfcea79e204a4660ddd1af09c054935b1/fixtures/qso-interface-compatibility-v1.json
+      EXPECTED_FIXTURE_BLOB: 143b80448cb4623682669ab8e6a9599239dd5847
+      PYTHONDONTWRITEBYTECODE: '1'
+
+    steps:
+      - name: Check out exact submitted source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SUBMITTED_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Assert exact clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
+          test -z "$(git status --porcelain)"
+          test -f contracts/qso-interface-source-tuple-v1.json
+          test -f scripts/validate_qso_interface_independent.py
+          test -f tests/test_qso_interface_independent.py
+          test -f docs/QSO_INTERFACE_CONFORMANCE.md
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Retrieve immutable producer corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/qso-interface-parity"
+          mkdir -p "$evidence"
+          curl --proto '=https' --tlsv1.2 --fail --location \
+            --retry 2 --retry-all-errors --max-time 30 \
+            "$PRODUCER_FIXTURE_URL" --output "$evidence/producer-fixture.json"
+          actual_blob="$(git hash-object "$evidence/producer-fixture.json")"
+          test "$actual_blob" = "$EXPECTED_FIXTURE_BLOB"
+          {
+            printf 'producer_head=%s\n' "$PRODUCER_HEAD"
+            printf 'producer_url=%s\n' "$PRODUCER_FIXTURE_URL"
+            printf 'expected_git_blob=%s\n' "$EXPECTED_FIXTURE_BLOB"
+            printf 'actual_git_blob=%s\n' "$actual_blob"
+            printf 'fixture_sha256=%s\n' "$(sha256sum "$evidence/producer-fixture.json" | cut -d' ' -f1)"
+          } | tee "$evidence/producer-source.txt"
+
+      - name: Run independent hostile regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/qso-interface-parity"
+          python -m unittest -v tests/test_qso_interface_independent.py \
+            2>&1 | tee "$evidence/tests.log"
+
+      - name: Validate producer corpus independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/qso-interface-parity"
+          python scripts/validate_qso_interface_independent.py \
+            --tuple contracts/qso-interface-source-tuple-v1.json \
+            --fixture "$evidence/producer-fixture.json" \
+            --report "$evidence/validation.json" \
+            2>&1 | tee "$evidence/validation.log"
+
+      - name: Compile validator outside source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import py_compile
+
+          py_compile.compile(
+              'scripts/validate_qso_interface_independent.py',
+              cfile=os.path.join(os.environ['RUNNER_TEMP'], 'validate_qso_interface_independent.pyc'),
+              doraise=True,
+          )
+          PY
+
+      - name: Record deterministic evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/qso-interface-parity"
+          mkdir -p "$evidence"
+          {
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'consumer_source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'producer_source_sha=%s\n' "$PRODUCER_HEAD"
+            printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
+            printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'python=%s\n' "$(python --version 2>&1)"
+            printf 'independent_consumer=true\n'
+            printf 'interface_acceptance=false\n'
+            printf 'capability_or_execution_authority=false\n'
+            printf 'merge_release_publication_authority=false\n'
+          } | tee "$evidence/source-identity.txt"
+          git status --porcelain > "$evidence/worktree-status.txt"
+          sha256sum \
+            contracts/qso-interface-source-tuple-v1.json \
+            scripts/validate_qso_interface_independent.py \
+            tests/test_qso_interface_independent.py \
+            docs/QSO_INTERFACE_CONFORMANCE.md \
+            .github/workflows/qso-interface-parity.yml \
+            > "$evidence/consumer-source.sha256"
+          find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > "$evidence/SHA256SUMS"
+
+      - name: Upload retained evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qso-interface-parity-${{ env.SUBMITTED_SHA }}
+          path: ${{ runner.temp }}/qso-interface-parity
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Fail closed on incomplete or dirty validation
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
+          test -z "$(git status --porcelain)"
+          test -s "$RUNNER_TEMP/qso-interface-parity/validation.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(
+              (Path(os.environ['RUNNER_TEMP']) / 'qso-interface-parity' / 'validation.json').read_text()
+          )
+          assert report['disposition'] == 'EVIDENCE_SATISFIED_AT_RECORDED_SYNTHETIC_TUPLE'
+          assert report['case_count'] == 17
+          assert report['positive_count'] == 2
+          assert report['blocked_count'] == 15
+          assert report['authority_effect'] == 'none'
+          PY

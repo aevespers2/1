@@ -50,6 +50,8 @@ No implementation may silently choose this interpretation. Approval requires sha
 - [Contract and state-machine design](docs/DESIGN_CONTRACTS.md)
 - [Developer onboarding](docs/DEVELOPER_ONBOARDING.md)
 - [Operations and recovery playbook](docs/OPERATIONS.md)
+- [Independent QSO ecosystem conformance](docs/QSO_ECOSYSTEM_CONFORMANCE.md)
+- [Independent QSO interface compatibility conformance](docs/QSO_INTERFACE_CONFORMANCE.md)
 - [Muse access model](docs/MUSE_ACCESS_MODEL.md)
 - [Task chain](taskchain.md)
 - [Punch list](punchlist.md)
