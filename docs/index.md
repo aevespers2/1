@@ -14,6 +14,7 @@ Its proposed role is to evaluate bounded transition requests, preserve append-on
 - [Portable Security Contract v0](PORTABLE_SECURITY_CONTRACT_V0.md)
 - [Canonical-state and capability authority](CAPABILITY_AUTHORITY.md)
 - [Obstruction and gluing analysis](OBSTRUCTION_AND_GLUING.md)
+- [Independent evidence-retention conformance](EVIDENCE_RETENTION_RENEWAL_CONFORMANCE.md)
 - [ADR-0001: candidate canonical-state and capability authority](adr/0001-canonical-state-and-capability-authority.md)
 - [Contract and state-machine design](DESIGN_CONTRACTS.md)
 - [Developer onboarding](DEVELOPER_ONBOARDING.md)
