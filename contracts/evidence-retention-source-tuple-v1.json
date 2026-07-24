@@ -1,0 +1,31 @@
+{
+  "schema": "repo1.evidence-retention.source-tuple.v1",
+  "observation_generation": 1,
+  "current": true,
+  "producer": {
+    "repository": "aevespers2/qso-field.github.io",
+    "pull_request": 24,
+    "head_sha": "155437912906a0119a087d63bf4ed889368a4a9f",
+    "path": "fixtures/evidence-retention-renewal-v1.json",
+    "git_blob": "f624abed1f72fbb7e6f2dbe5b443cce891abc05c",
+    "sha256": "9d4c78fc8c9b54a91bd272a4bc929dc368d3af23b62cf2eec1d833b9a7ec449f"
+  },
+  "workflow_evidence": {
+    "run_id": 29970998778,
+    "run_conclusion": "success",
+    "artifact_id": 8549658807,
+    "artifact_name": "evidence-retention-renewal-155437912906a0119a087d63bf4ed889368a4a9f",
+    "artifact_digest": "sha256:803e80829c29c8f1bfaf916e76d0e9f14ce191c3d65b4bc543490aa98d86021a",
+    "artifact_available": true,
+    "created_at": "2026-07-23T01:08:09Z",
+    "expires_at": "2026-08-22T01:08:09Z"
+  },
+  "resolution": {
+    "resolved_at": "2026-07-23T02:55:54Z",
+    "resolver_id": "repo1-retention-source-resolver-v1",
+    "verifier_id": "repo1-retention-semantic-verifier-v1",
+    "resolver_and_verifier_independent": true,
+    "supersedes": []
+  },
+  "authority_effect": "none"
+}

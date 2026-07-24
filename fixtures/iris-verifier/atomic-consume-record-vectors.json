@@ -1,0 +1,274 @@
+{
+  "baseline": {
+    "operation": {
+      "attempt_id": "iris-attempt-new",
+      "expected_state_version": 7,
+      "fault_point": "none",
+      "operation_id": "iris-operation-new",
+      "profile_id": "iris-profile-a",
+      "proposed_receipt_id": "iris-receipt-new",
+      "schema": "qso.iris-consume-record-operation.v0"
+    },
+    "state": {
+      "receipts": [
+        {
+          "attempt_id": "iris-attempt-prior",
+          "committed_state_version": 7,
+          "disposition": "accepted",
+          "operation_id": "iris-operation-prior",
+          "profile_id": "iris-profile-a",
+          "receipt_id": "iris-receipt-prior"
+        }
+      ],
+      "revoked_profile_ids": [],
+      "schema": "qso.iris-authority-state.v0",
+      "seen_attempt_ids": [
+        "iris-attempt-prior"
+      ],
+      "state_version": 7
+    }
+  },
+  "cases": [
+    {
+      "case_id": "valid-commit",
+      "expected": {
+        "error": null,
+        "outcome": "accepted",
+        "receipt_count": 2,
+        "seen_attempt_ids": [
+          "iris-attempt-prior",
+          "iris-attempt-new"
+        ],
+        "state_sha256": "bd5639c856a826fa1cd86e0b692857d2728bc1e2dc5792c9f2241e665752a27e",
+        "state_version": 8
+      },
+      "operation_overrides": {},
+      "state_overrides": {}
+    },
+    {
+      "case_id": "replayed-attempt",
+      "expected": {
+        "error": "attempt-replay",
+        "outcome": "reject",
+        "receipt_count": 1,
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_sha256": "11cc06269142a6cba6f382d95c65bec3b3f2f326bf478992b698c874fd1aaf58",
+        "state_version": 7
+      },
+      "operation_overrides": {
+        "attempt_id": "iris-attempt-prior",
+        "operation_id": "iris-operation-replay",
+        "proposed_receipt_id": "iris-receipt-replay"
+      },
+      "state_overrides": {}
+    },
+    {
+      "case_id": "revoked-profile",
+      "expected": {
+        "error": "profile-revoked",
+        "outcome": "reject",
+        "receipt_count": 1,
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_sha256": "f87b5fc7703ff1fb85614d6c497bad2d9d3c4ffb923c7f34000d0ae78142be65",
+        "state_version": 7
+      },
+      "operation_overrides": {},
+      "state_overrides": {
+        "revoked_profile_ids": [
+          "iris-profile-a"
+        ]
+      }
+    },
+    {
+      "case_id": "stale-state-version",
+      "expected": {
+        "error": "stale-state-version",
+        "outcome": "reject",
+        "receipt_count": 1,
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_sha256": "11cc06269142a6cba6f382d95c65bec3b3f2f326bf478992b698c874fd1aaf58",
+        "state_version": 7
+      },
+      "operation_overrides": {
+        "expected_state_version": 6
+      },
+      "state_overrides": {}
+    },
+    {
+      "case_id": "interrupted-before-commit",
+      "expected": {
+        "error": "before-commit",
+        "outcome": "interrupted-before-commit",
+        "receipt_count": 1,
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_sha256": "11cc06269142a6cba6f382d95c65bec3b3f2f326bf478992b698c874fd1aaf58",
+        "state_version": 7
+      },
+      "operation_overrides": {
+        "fault_point": "before-commit"
+      },
+      "state_overrides": {}
+    },
+    {
+      "case_id": "interrupted-after-prepare",
+      "expected": {
+        "error": "after-prepare",
+        "outcome": "interrupted-before-commit",
+        "receipt_count": 1,
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_sha256": "11cc06269142a6cba6f382d95c65bec3b3f2f326bf478992b698c874fd1aaf58",
+        "state_version": 7
+      },
+      "operation_overrides": {
+        "fault_point": "after-prepare"
+      },
+      "state_overrides": {}
+    },
+    {
+      "case_id": "committed-before-ack",
+      "expected": {
+        "error": null,
+        "outcome": "committed-no-ack",
+        "receipt_count": 2,
+        "seen_attempt_ids": [
+          "iris-attempt-prior",
+          "iris-attempt-new"
+        ],
+        "state_sha256": "bd5639c856a826fa1cd86e0b692857d2728bc1e2dc5792c9f2241e665752a27e",
+        "state_version": 8
+      },
+      "operation_overrides": {
+        "fault_point": "after-commit-before-ack"
+      },
+      "state_overrides": {}
+    },
+    {
+      "case_id": "retry-after-unknown-ack",
+      "expected": {
+        "error": null,
+        "outcome": "already-committed",
+        "receipt_count": 2,
+        "seen_attempt_ids": [
+          "iris-attempt-prior",
+          "iris-attempt-new"
+        ],
+        "state_sha256": "bd5639c856a826fa1cd86e0b692857d2728bc1e2dc5792c9f2241e665752a27e",
+        "state_version": 8
+      },
+      "operation_overrides": {
+        "expected_state_version": 8
+      },
+      "state_overrides": {
+        "receipts": [
+          {
+            "attempt_id": "iris-attempt-prior",
+            "committed_state_version": 7,
+            "disposition": "accepted",
+            "operation_id": "iris-operation-prior",
+            "profile_id": "iris-profile-a",
+            "receipt_id": "iris-receipt-prior"
+          },
+          {
+            "attempt_id": "iris-attempt-new",
+            "committed_state_version": 8,
+            "disposition": "accepted",
+            "operation_id": "iris-operation-new",
+            "profile_id": "iris-profile-a",
+            "receipt_id": "iris-receipt-new"
+          }
+        ],
+        "revoked_profile_ids": [],
+        "seen_attempt_ids": [
+          "iris-attempt-prior",
+          "iris-attempt-new"
+        ],
+        "state_version": 8
+      }
+    },
+    {
+      "case_id": "partial-consume-without-receipt",
+      "expected": {
+        "error": "partial-consume-record",
+        "outcome": "reject",
+        "receipt_count": 1,
+        "seen_attempt_ids": [
+          "iris-attempt-prior",
+          "iris-attempt-orphan"
+        ],
+        "state_sha256": "7df99341e884416f1bb9b60693bd0b31616994efeea79534bf45225e6862a87e",
+        "state_version": 7
+      },
+      "operation_overrides": {},
+      "state_overrides": {
+        "receipts": [
+          {
+            "attempt_id": "iris-attempt-prior",
+            "committed_state_version": 7,
+            "disposition": "accepted",
+            "operation_id": "iris-operation-prior",
+            "profile_id": "iris-profile-a",
+            "receipt_id": "iris-receipt-prior"
+          }
+        ],
+        "revoked_profile_ids": [],
+        "seen_attempt_ids": [
+          "iris-attempt-prior",
+          "iris-attempt-orphan"
+        ],
+        "state_version": 7
+      }
+    },
+    {
+      "case_id": "partial-receipt-without-consume",
+      "expected": {
+        "error": "partial-consume-record",
+        "outcome": "reject",
+        "receipt_count": 2,
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_sha256": "c3d3afe826991f8758c1003204c7405d04c1d0030593baa7242e2239533f0fa5",
+        "state_version": 7
+      },
+      "operation_overrides": {},
+      "state_overrides": {
+        "receipts": [
+          {
+            "attempt_id": "iris-attempt-prior",
+            "committed_state_version": 7,
+            "disposition": "accepted",
+            "operation_id": "iris-operation-prior",
+            "profile_id": "iris-profile-a",
+            "receipt_id": "iris-receipt-prior"
+          },
+          {
+            "attempt_id": "iris-attempt-orphan",
+            "committed_state_version": 7,
+            "disposition": "accepted",
+            "operation_id": "iris-operation-orphan",
+            "profile_id": "iris-profile-a",
+            "receipt_id": "iris-receipt-orphan"
+          }
+        ],
+        "revoked_profile_ids": [],
+        "seen_attempt_ids": [
+          "iris-attempt-prior"
+        ],
+        "state_version": 7
+      }
+    }
+  ],
+  "operational_authority": false,
+  "schema": "qso.iris-atomic-consume-record-fixtures.v0",
+  "synthetic_only": true
+}

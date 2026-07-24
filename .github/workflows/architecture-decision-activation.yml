@@ -1,0 +1,130 @@
+name: Architecture Decision Activation Parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ARCHITECTURE_DECISION_ACTIVATION_CONFORMANCE.md'
+      - 'scripts/validate_architecture_decision_activation.py'
+      - 'tests/test_architecture_decision_activation_contract.py'
+      - '.github/workflows/architecture-decision-activation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/ARCHITECTURE_DECISION_ACTIVATION_CONFORMANCE.md'
+      - 'scripts/validate_architecture_decision_activation.py'
+      - 'tests/test_architecture_decision_activation_contract.py'
+      - '.github/workflows/architecture-decision-activation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  independent-consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PRODUCER_COMMIT: dc05e4da47b1afee93feb0f9dabfb9eba79341a8
+      EXPECTED_GIT_BLOB: 9bcd29c33c10cc23769b8189587d5b8feda9286a
+      PRODUCER_URL: https://raw.githubusercontent.com/aevespers2/qso-field.github.io/dc05e4da47b1afee93feb0f9dabfb9eba79341a8/fixtures/architecture-decision-activation-v1.json
+      ARCHITECTURE_DECISION_FIXTURE: evidence/architecture-decision/producer-fixture.json
+
+    steps:
+      - name: Check out exact submitted source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SUBMITTED_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Assert exact clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
+          test -z "$(git status --porcelain)"
+          test -f docs/ARCHITECTURE_DECISION_ACTIVATION_CONFORMANCE.md
+          test -f scripts/validate_architecture_decision_activation.py
+          test -f tests/test_architecture_decision_activation_contract.py
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Retrieve immutable producer corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/architecture-decision
+          curl --proto '=https' --tlsv1.2 --fail --location \
+            --retry 2 --retry-all-errors --max-time 30 \
+            "$PRODUCER_URL" --output "$ARCHITECTURE_DECISION_FIXTURE"
+          actual_blob="$(git hash-object "$ARCHITECTURE_DECISION_FIXTURE")"
+          test "$actual_blob" = "$EXPECTED_GIT_BLOB"
+          actual_sha256="$(sha256sum "$ARCHITECTURE_DECISION_FIXTURE" | cut -d' ' -f1)"
+          {
+            printf 'producer_commit=%s\n' "$PRODUCER_COMMIT"
+            printf 'producer_url=%s\n' "$PRODUCER_URL"
+            printf 'expected_git_blob=%s\n' "$EXPECTED_GIT_BLOB"
+            printf 'actual_git_blob=%s\n' "$actual_blob"
+            printf 'fixture_sha256=%s\n' "$actual_sha256"
+          } | tee evidence/architecture-decision/producer-source.txt
+
+      - name: Run independent adversarial regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest tests.test_architecture_decision_activation_contract -v \
+            2>&1 | tee evidence/architecture-decision/tests.log
+
+      - name: Validate producer corpus independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_architecture_decision_activation.py \
+            --fixture "$ARCHITECTURE_DECISION_FIXTURE" \
+            --report evidence/architecture-decision/validation.json \
+            2>&1 | tee evidence/architecture-decision/validation.log
+
+      - name: Record exact-head evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/architecture-decision
+          {
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'consumer_source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
+            printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'python=%s\n' "$(python --version 2>&1)"
+            printf 'independent_consumer=true\n'
+            printf 'architecture_approval=false\n'
+            printf 'activation_authority=false\n'
+            printf 'merge_release_publication_authority=false\n'
+          } | tee evidence/architecture-decision/source-identity.txt
+          sha256sum \
+            docs/ARCHITECTURE_DECISION_ACTIVATION_CONFORMANCE.md \
+            scripts/validate_architecture_decision_activation.py \
+            tests/test_architecture_decision_activation_contract.py \
+            .github/workflows/architecture-decision-activation.yml \
+            > evidence/architecture-decision/consumer-source.sha256
+          find evidence/architecture-decision -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > evidence/architecture-decision/SHA256SUMS
+
+      - name: Upload retained evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: architecture-decision-activation-${{ env.SUBMITTED_SHA }}
+          path: evidence/architecture-decision
+          if-no-files-found: error
+          retention-days: 90

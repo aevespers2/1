@@ -1,0 +1,190 @@
+name: Architecture Review Quorum Parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md'
+      - 'scripts/validate_architecture_review_quorum.py'
+      - 'scripts/verify_architecture_review_quorum_source_identity.py'
+      - 'tests/test_architecture_review_quorum_contract.py'
+      - 'tests/test_architecture_review_quorum_source_identity.py'
+      - 'taskchain.md'
+      - 'punchlist.md'
+      - 'release.md'
+      - 'changelog.md'
+      - '.github/workflows/architecture-review-quorum.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md'
+      - 'scripts/validate_architecture_review_quorum.py'
+      - 'scripts/verify_architecture_review_quorum_source_identity.py'
+      - 'tests/test_architecture_review_quorum_contract.py'
+      - 'tests/test_architecture_review_quorum_source_identity.py'
+      - 'taskchain.md'
+      - 'punchlist.md'
+      - 'release.md'
+      - 'changelog.md'
+      - '.github/workflows/architecture-review-quorum.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  independent-consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PRODUCER_COMMIT: 13f5f1a6cb4ba589c1a0e616ca40fc3f8dcfe028
+      BASE_URL: https://raw.githubusercontent.com/aevespers2/qso-field.github.io/13f5f1a6cb4ba589c1a0e616ca40fc3f8dcfe028/fixtures/architecture-review-quorum-v1.json
+      EXTENSION_URL: https://raw.githubusercontent.com/aevespers2/qso-field.github.io/13f5f1a6cb4ba589c1a0e616ca40fc3f8dcfe028/fixtures/architecture-review-quorum-extension-v1.json
+      BASE_RAW_SHA256: dea97fcfd54cd71e9bf38af0c8ca4eeeedd83156ab4d1ae2a7f91513a32485f5
+      EXTENSION_RAW_SHA256: 14ed2b65dea7b3c5fc0b026e839144beff34f07fc416f0a54b77b8acf17a6ed4
+      BASE_CANONICAL_SHA256: a8b65c3fce4b7cf80fdefab76c497720b2bf17086d431a53f9bacf82e58bd9ec
+      EXTENSION_CANONICAL_SHA256: 6e767141e6c76ec43366b661db0fee9090a56c9ce7d50eda28da7f1094d5e3c2
+      BASE_FIXTURE: evidence/architecture-review-quorum/base.json
+      EXTENSION_FIXTURE: evidence/architecture-review-quorum/extension.json
+
+    steps:
+      - name: Check out exact submitted source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SUBMITTED_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Assert exact clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
+          test -z "$(git status --porcelain)"
+          required=(
+            docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md
+            scripts/validate_architecture_review_quorum.py
+            scripts/verify_architecture_review_quorum_source_identity.py
+            tests/test_architecture_review_quorum_contract.py
+            tests/test_architecture_review_quorum_source_identity.py
+            taskchain.md
+            punchlist.md
+            release.md
+            changelog.md
+          )
+          for path in "${required[@]}"; do
+            test -f "$path"
+          done
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Retrieve and bind immutable producer corpora
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/architecture-review-quorum
+          curl --proto '=https' --tlsv1.2 --fail --location \
+            --retry 2 --retry-all-errors --max-time 30 \
+            "$BASE_URL" --output "$BASE_FIXTURE"
+          curl --proto '=https' --tlsv1.2 --fail --location \
+            --retry 2 --retry-all-errors --max-time 30 \
+            "$EXTENSION_URL" --output "$EXTENSION_FIXTURE"
+
+          base_raw_sha256="$(sha256sum "$BASE_FIXTURE" | cut -d' ' -f1)"
+          extension_raw_sha256="$(sha256sum "$EXTENSION_FIXTURE" | cut -d' ' -f1)"
+          test "$base_raw_sha256" = "$BASE_RAW_SHA256"
+          test "$extension_raw_sha256" = "$EXTENSION_RAW_SHA256"
+
+          {
+            printf 'producer_commit=%s\n' "$PRODUCER_COMMIT"
+            printf 'base_url=%s\n' "$BASE_URL"
+            printf 'extension_url=%s\n' "$EXTENSION_URL"
+            printf 'base_raw_sha256=%s\n' "$base_raw_sha256"
+            printf 'base_expected_raw_sha256=%s\n' "$BASE_RAW_SHA256"
+            printf 'extension_raw_sha256=%s\n' "$extension_raw_sha256"
+            printf 'extension_expected_raw_sha256=%s\n' "$EXTENSION_RAW_SHA256"
+            printf 'base_expected_canonical_sha256=%s\n' "$BASE_CANONICAL_SHA256"
+            printf 'extension_expected_canonical_sha256=%s\n' "$EXTENSION_CANONICAL_SHA256"
+          } | tee evidence/architecture-review-quorum/producer-source.txt
+
+      - name: Verify producer bytes before semantic validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m scripts.verify_architecture_review_quorum_source_identity \
+            --base "$BASE_FIXTURE" \
+            --extension "$EXTENSION_FIXTURE" \
+            --report evidence/architecture-review-quorum/source-identity-validation.json \
+            2>&1 | tee evidence/architecture-review-quorum/source-identity-validation.log
+
+      - name: Run independent hostile regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest \
+            tests.test_architecture_review_quorum_contract \
+            tests.test_architecture_review_quorum_source_identity \
+            -v 2>&1 | tee evidence/architecture-review-quorum/tests.log
+
+      - name: Validate both producer generations independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_architecture_review_quorum.py \
+            --base "$BASE_FIXTURE" \
+            --extension "$EXTENSION_FIXTURE" \
+            --report evidence/architecture-review-quorum/validation.json \
+            2>&1 | tee evidence/architecture-review-quorum/validation.log
+
+      - name: Record exact-head evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/architecture-review-quorum
+          {
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'consumer_source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
+            printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'python=%s\n' "$(python --version 2>&1)"
+            printf 'independent_consumer=true\n'
+            printf 'raw_byte_identity_enforced=true\n'
+            printf 'raw_byte_drift_regression=true\n'
+            printf 'raw_gate_precedes_semantic_validation=true\n'
+            printf 'canonical_semantic_identity_enforced=true\n'
+            printf 'reviewer_appointment=false\n'
+            printf 'real_quorum=false\n'
+            printf 'architecture_decision=false\n'
+            printf 'activation_authority=false\n'
+            printf 'merge_release_publication_authority=false\n'
+          } | tee evidence/architecture-review-quorum/source-identity.txt
+          sha256sum \
+            docs/ARCHITECTURE_REVIEW_QUORUM_CONFORMANCE.md \
+            scripts/validate_architecture_review_quorum.py \
+            scripts/verify_architecture_review_quorum_source_identity.py \
+            tests/test_architecture_review_quorum_contract.py \
+            tests/test_architecture_review_quorum_source_identity.py \
+            taskchain.md punchlist.md release.md changelog.md \
+            .github/workflows/architecture-review-quorum.yml \
+            > evidence/architecture-review-quorum/consumer-source.sha256
+          find evidence/architecture-review-quorum -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > evidence/architecture-review-quorum/SHA256SUMS
+
+      - name: Upload retained evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: architecture-review-quorum-${{ env.SUBMITTED_SHA }}
+          path: evidence/architecture-review-quorum
+          if-no-files-found: error
+          retention-days: 90

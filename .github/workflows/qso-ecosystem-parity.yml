@@ -1,0 +1,128 @@
+name: QSO Ecosystem Independent Parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'contracts/qso-ecosystem-source-tuple-v1.json'
+      - 'docs/QSO_ECOSYSTEM_CONFORMANCE.md'
+      - 'scripts/validate_qso_ecosystem_independent.py'
+      - 'tests/test_qso_ecosystem_independent.py'
+      - '.github/workflows/qso-ecosystem-parity.yml'
+      - 'docs/index.md'
+      - 'taskchain.md'
+      - 'punchlist.md'
+      - 'release.md'
+      - 'changelog.md'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/qso-ecosystem-source-tuple-v1.json'
+      - 'docs/QSO_ECOSYSTEM_CONFORMANCE.md'
+      - 'scripts/validate_qso_ecosystem_independent.py'
+      - 'tests/test_qso_ecosystem_independent.py'
+      - '.github/workflows/qso-ecosystem-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qso-ecosystem-parity-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  independent-consumer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PRODUCER_HEAD: 738cf25aec9b2bae0b71c50374585bab36934ef3
+      MANIFEST_URL: https://raw.githubusercontent.com/aevespers2/QSO-FABRIC/738cf25aec9b2bae0b71c50374585bab36934ef3/qso.manifest.json
+      SCHEMA_URL: https://raw.githubusercontent.com/aevespers2/QSO-FABRIC/738cf25aec9b2bae0b71c50374585bab36934ef3/schemas/qso-manifest.schema.json
+      README_URL: https://raw.githubusercontent.com/aevespers2/QSO-FABRIC/738cf25aec9b2bae0b71c50374585bab36934ef3/README.md
+      WORKFLOW_URL: https://raw.githubusercontent.com/aevespers2/QSO-FABRIC/738cf25aec9b2bae0b71c50374585bab36934ef3/.github/workflows/ecosystem-conformance.yml
+
+    steps:
+      - name: Check out exact submitted source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SUBMITTED_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Assert exact clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
+          test -z "$(git status --porcelain)"
+          test -f contracts/qso-ecosystem-source-tuple-v1.json
+          test -f docs/QSO_ECOSYSTEM_CONFORMANCE.md
+          test -f scripts/validate_qso_ecosystem_independent.py
+          test -f tests/test_qso_ecosystem_independent.py
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Retrieve immutable producer files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/qso-ecosystem/producer/.github/workflows
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 2 --retry-all-errors --max-time 30 "$MANIFEST_URL" -o evidence/qso-ecosystem/producer/qso.manifest.json
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 2 --retry-all-errors --max-time 30 "$SCHEMA_URL" -o evidence/qso-ecosystem/producer/qso-manifest.schema.json
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 2 --retry-all-errors --max-time 30 "$README_URL" -o evidence/qso-ecosystem/producer/README.md
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 2 --retry-all-errors --max-time 30 "$WORKFLOW_URL" -o evidence/qso-ecosystem/producer/.github/workflows/ecosystem-conformance.yml
+
+      - name: Run independent hostile regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONDONTWRITEBYTECODE=1 python -m unittest tests.test_qso_ecosystem_independent -v 2>&1 | tee evidence/qso-ecosystem/tests.log
+
+      - name: Validate exact producer contract independently
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONDONTWRITEBYTECODE=1 python scripts/validate_qso_ecosystem_independent.py \
+            --tuple contracts/qso-ecosystem-source-tuple-v1.json \
+            --manifest evidence/qso-ecosystem/producer/qso.manifest.json \
+            --schema evidence/qso-ecosystem/producer/qso-manifest.schema.json \
+            --readme evidence/qso-ecosystem/producer/README.md \
+            --workflow evidence/qso-ecosystem/producer/.github/workflows/ecosystem-conformance.yml \
+            --report evidence/qso-ecosystem/validation.json \
+            2>&1 | tee evidence/qso-ecosystem/validation.log
+
+      - name: Record exact-head evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'consumer_source_sha=%s\n' "$(git rev-parse HEAD)"
+            printf 'producer_head=%s\n' "$PRODUCER_HEAD"
+            printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
+            printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'independent_consumer=true\n'
+            printf 'ecosystem_admission=false\n'
+            printf 'capability_or_execution_authority=false\n'
+            printf 'merge_release_publication_authority=false\n'
+          } | tee evidence/qso-ecosystem/source-identity.txt
+          sha256sum contracts/qso-ecosystem-source-tuple-v1.json docs/QSO_ECOSYSTEM_CONFORMANCE.md scripts/validate_qso_ecosystem_independent.py tests/test_qso_ecosystem_independent.py .github/workflows/qso-ecosystem-parity.yml > evidence/qso-ecosystem/consumer-source.sha256
+          find evidence/qso-ecosystem -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > evidence/qso-ecosystem/SHA256SUMS
+          git diff --exit-code
+          git diff --cached --exit-code
+
+      - name: Upload retained evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qso-ecosystem-parity-${{ env.SUBMITTED_SHA }}
+          path: evidence/qso-ecosystem
+          if-no-files-found: error
+          retention-days: 90

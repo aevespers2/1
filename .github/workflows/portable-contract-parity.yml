@@ -1,0 +1,281 @@
+name: Portable Contract Parity
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'contracts/portable-security-contract-v0.profile.json'
+      - 'docs/portable-security-contract-v0.md'
+      - 'docs/PORTABLE_SECURITY_CONTRACT_V0.md'
+      - 'docs/REPOSITORY_LOCAL_MAINTAINER_CONFORMANCE.md'
+      - 'fixtures/iris-verifier/hostile-context-vectors.json'
+      - 'fixtures/iris-verifier/atomic-consume-record-vectors.json'
+      - 'fixtures/iris-verifier/crash-recovery-journal-vectors.json'
+      - 'fixtures/portfolio-contract-graph-v1.json'
+      - 'fixtures/portfolio-responsibility-custody-v1.json'
+      - 'fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64'
+      - 'fixtures/repository-local-maintainer-v1.json'
+      - 'scripts/validate_iris_hostile_fixtures.py'
+      - 'scripts/validate_iris_atomic_fixtures.py'
+      - 'scripts/validate_iris_journal_fixtures.py'
+      - 'scripts/validate_portfolio_graph_fixtures.py'
+      - 'scripts/validate_portfolio_responsibility_fixtures.py'
+      - 'scripts/validate_constitutional_appointment_lifecycle.py'
+      - 'scripts/validate_repository_local_maintainer_fixtures.py'
+      - 'scripts/validate_portable_contract_profile.py'
+      - 'tests/test_iris_hostile_contract.py'
+      - 'tests/test_iris_atomic_contract.py'
+      - 'tests/test_iris_journal_contract.py'
+      - 'tests/test_portfolio_graph_contract.py'
+      - 'tests/test_portfolio_responsibility_contract.py'
+      - 'tests/test_constitutional_lifecycle_contract.py'
+      - 'tests/test_repository_local_maintainer_contract.py'
+      - 'tests/test_portable_contract_profile.py'
+      - '.github/workflows/portable-contract-parity.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/portable-security-contract-v0.profile.json'
+      - 'docs/portable-security-contract-v0.md'
+      - 'docs/PORTABLE_SECURITY_CONTRACT_V0.md'
+      - 'docs/REPOSITORY_LOCAL_MAINTAINER_CONFORMANCE.md'
+      - 'fixtures/iris-verifier/hostile-context-vectors.json'
+      - 'fixtures/iris-verifier/atomic-consume-record-vectors.json'
+      - 'fixtures/iris-verifier/crash-recovery-journal-vectors.json'
+      - 'fixtures/portfolio-contract-graph-v1.json'
+      - 'fixtures/portfolio-responsibility-custody-v1.json'
+      - 'fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64'
+      - 'fixtures/repository-local-maintainer-v1.json'
+      - 'scripts/validate_iris_hostile_fixtures.py'
+      - 'scripts/validate_iris_atomic_fixtures.py'
+      - 'scripts/validate_iris_journal_fixtures.py'
+      - 'scripts/validate_portfolio_graph_fixtures.py'
+      - 'scripts/validate_portfolio_responsibility_fixtures.py'
+      - 'scripts/validate_constitutional_appointment_lifecycle.py'
+      - 'scripts/validate_repository_local_maintainer_fixtures.py'
+      - 'scripts/validate_portable_contract_profile.py'
+      - 'tests/test_iris_hostile_contract.py'
+      - 'tests/test_iris_atomic_contract.py'
+      - 'tests/test_iris_journal_contract.py'
+      - 'tests/test_portfolio_graph_contract.py'
+      - 'tests/test_portfolio_responsibility_contract.py'
+      - 'tests/test_constitutional_lifecycle_contract.py'
+      - 'tests/test_repository_local_maintainer_contract.py'
+      - 'tests/test_portable_contract_profile.py'
+      - '.github/workflows/portable-contract-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUBMITTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      EXPECTED_PROFILE_SHA256: 2aa1016828fe5797d4bedd1fbaf80a58dbb018d34df23d52d6de23bb8721f619
+      EXPECTED_IRIS_FIXTURE_SHA256: 677a66f65bde813e122c6493b5421a06dadf867cfa029a05f3bc610564f50006
+      EXPECTED_ATOMIC_FIXTURE_SHA256: 5557b6eeec96a2655410a9a60bfddec9c981a10762f0f02eb6b91f07e0379fc5
+      EXPECTED_JOURNAL_FIXTURE_SHA256: f255438eab406bba71ab23fad60d34b2a7d3a580e90583e1517d432d8e03b89a
+      EXPECTED_GRAPH_FIXTURE_SHA256: 3deaaac5bcc86bdcfd48fdf527d8609a2bc2fd436de8bba1694dc89d150fdbcc
+      EXPECTED_RESPONSIBILITY_FIXTURE_SHA256: 299e2542d729bf30fabac1c08d0c2ecd8d21f655d190013419e205fba28ebd8f
+      EXPECTED_LIFECYCLE_FIXTURE_SHA256: be85c05f876a1027fbf960d464fbc919e5896ccdd03dfa7373563c16ab9280fe
+      EXPECTED_MAINTAINER_FIXTURE_SHA256: a920723c66e45acae7be988295f193e64f20d847d52564bfd295644190f65cd4
+
+    steps:
+      - name: Initialize terminal evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_dir="$RUNNER_TEMP/portable-contract-evidence"
+          mkdir -p "$evidence_dir"
+          printf 'EVIDENCE_DIR=%s\n' "$evidence_dir" >> "$GITHUB_ENV"
+          {
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'event=%s\n' "$GITHUB_EVENT_NAME"
+            printf 'submitted_sha=%s\n' "$SUBMITTED_SHA"
+            printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
+            printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+          } > "$evidence_dir/submission.txt"
+
+      - name: Check out exact submitted source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ env.SUBMITTED_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Assert exact clean source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SUBMITTED_SHA"
+          test -z "$(git status --porcelain)"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Run contract regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p 'test_*contract*.py' -v \
+            2>&1 | tee "$EVIDENCE_DIR/tests.log"
+
+      - name: Validate portable contract and shared corpora
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f docs/portable-security-contract-v0.md ]; then
+            document=docs/portable-security-contract-v0.md
+          elif [ -f docs/PORTABLE_SECURITY_CONTRACT_V0.md ]; then
+            document=docs/PORTABLE_SECURITY_CONTRACT_V0.md
+          else
+            echo 'Portable Security Contract document is missing' >&2
+            exit 1
+          fi
+
+          python scripts/validate_portable_contract_profile.py \
+            --profile contracts/portable-security-contract-v0.profile.json \
+            --document "$document" \
+            --expected-sha256 "$EXPECTED_PROFILE_SHA256" \
+            --report "$EVIDENCE_DIR/profile-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/profile-validation.log"
+
+          python scripts/validate_iris_hostile_fixtures.py \
+            --fixture fixtures/iris-verifier/hostile-context-vectors.json \
+            --expected-sha256 "$EXPECTED_IRIS_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/iris-hostile-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/iris-hostile-validation.log"
+
+          python scripts/validate_iris_atomic_fixtures.py \
+            --fixture fixtures/iris-verifier/atomic-consume-record-vectors.json \
+            --expected-sha256 "$EXPECTED_ATOMIC_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/iris-atomic-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/iris-atomic-validation.log"
+
+          python scripts/validate_iris_journal_fixtures.py \
+            --fixture fixtures/iris-verifier/crash-recovery-journal-vectors.json \
+            --expected-sha256 "$EXPECTED_JOURNAL_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/iris-journal-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/iris-journal-validation.log"
+
+          python scripts/validate_portfolio_graph_fixtures.py \
+            --fixture fixtures/portfolio-contract-graph-v1.json \
+            --expected-sha256 "$EXPECTED_GRAPH_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/portfolio-graph-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/portfolio-graph-validation.log"
+
+          python scripts/validate_portfolio_responsibility_fixtures.py \
+            --fixture fixtures/portfolio-responsibility-custody-v1.json \
+            --expected-sha256 "$EXPECTED_RESPONSIBILITY_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/portfolio-responsibility-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/portfolio-responsibility-validation.log"
+
+          python scripts/validate_constitutional_appointment_lifecycle.py \
+            --fixture fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64 \
+            --expected-sha256 "$EXPECTED_LIFECYCLE_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/constitutional-lifecycle-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/constitutional-lifecycle-validation.log"
+
+          python scripts/validate_repository_local_maintainer_fixtures.py \
+            --fixture fixtures/repository-local-maintainer-v1.json \
+            --expected-sha256 "$EXPECTED_MAINTAINER_FIXTURE_SHA256" \
+            --report "$EVIDENCE_DIR/repository-local-maintainer-validation.json" \
+            2>&1 | tee "$EVIDENCE_DIR/repository-local-maintainer-validation.log"
+
+      - name: Record exact-head evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD 2>/dev/null || printf 'UNAVAILABLE')"
+          python_version="$(python --version 2>&1 || printf 'UNAVAILABLE')"
+          {
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'source_sha=%s\n' "$source_sha"
+            printf 'submitted_sha=%s\n' "$SUBMITTED_SHA"
+            printf 'workflow_run=%s\n' "$GITHUB_RUN_ID"
+            printf 'workflow_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'expected_profile_sha256=%s\n' "$EXPECTED_PROFILE_SHA256"
+            printf 'expected_iris_fixture_sha256=%s\n' "$EXPECTED_IRIS_FIXTURE_SHA256"
+            printf 'expected_atomic_fixture_sha256=%s\n' "$EXPECTED_ATOMIC_FIXTURE_SHA256"
+            printf 'expected_journal_fixture_sha256=%s\n' "$EXPECTED_JOURNAL_FIXTURE_SHA256"
+            printf 'expected_graph_fixture_sha256=%s\n' "$EXPECTED_GRAPH_FIXTURE_SHA256"
+            printf 'expected_responsibility_fixture_sha256=%s\n' "$EXPECTED_RESPONSIBILITY_FIXTURE_SHA256"
+            printf 'expected_lifecycle_fixture_sha256=%s\n' "$EXPECTED_LIFECYCLE_FIXTURE_SHA256"
+            printf 'expected_maintainer_fixture_sha256=%s\n' "$EXPECTED_MAINTAINER_FIXTURE_SHA256"
+            printf 'independent_iris_validation=true\n'
+            printf 'independent_atomic_validation=true\n'
+            printf 'independent_journal_validation=true\n'
+            printf 'independent_graph_validation=true\n'
+            printf 'independent_responsibility_validation=true\n'
+            printf 'independent_lifecycle_validation=true\n'
+            printf 'independent_maintainer_validation=true\n'
+            printf 'maintainer_appointment_authority=false\n'
+            printf 'repository_permission_authority=false\n'
+            printf 'merge_authority=false\n'
+            printf 'publication_authority=false\n'
+            printf 'durable_journal_authority=false\n'
+            printf 'appointment_authority=false\n'
+            printf 'credential_authority=false\n'
+            printf 'operational_authority=false\n'
+            printf 'python=%s\n' "$python_version"
+          } > "$EVIDENCE_DIR/run-summary.txt"
+
+          git status --porcelain > "$EVIDENCE_DIR/worktree.txt" 2>&1 || true
+          tracked=(
+            contracts/portable-security-contract-v0.profile.json
+            docs/REPOSITORY_LOCAL_MAINTAINER_CONFORMANCE.md
+            fixtures/iris-verifier/hostile-context-vectors.json
+            fixtures/iris-verifier/atomic-consume-record-vectors.json
+            fixtures/iris-verifier/crash-recovery-journal-vectors.json
+            fixtures/portfolio-contract-graph-v1.json
+            fixtures/portfolio-responsibility-custody-v1.json
+            fixtures/constitutional-appointment-lifecycle-v1.json.gz.b64
+            fixtures/repository-local-maintainer-v1.json
+            scripts/validate_iris_hostile_fixtures.py
+            scripts/validate_iris_atomic_fixtures.py
+            scripts/validate_iris_journal_fixtures.py
+            scripts/validate_portfolio_graph_fixtures.py
+            scripts/validate_portfolio_responsibility_fixtures.py
+            scripts/validate_constitutional_appointment_lifecycle.py
+            scripts/validate_repository_local_maintainer_fixtures.py
+            scripts/validate_portable_contract_profile.py
+            tests/test_iris_hostile_contract.py
+            tests/test_iris_atomic_contract.py
+            tests/test_iris_journal_contract.py
+            tests/test_portfolio_graph_contract.py
+            tests/test_portfolio_responsibility_contract.py
+            tests/test_constitutional_lifecycle_contract.py
+            tests/test_repository_local_maintainer_contract.py
+            tests/test_portable_contract_profile.py
+            .github/workflows/portable-contract-parity.yml
+          )
+          : > "$EVIDENCE_DIR/source.sha256"
+          for path in "${tracked[@]}"; do
+            if [ -f "$path" ]; then
+              sha256sum "$path" >> "$EVIDENCE_DIR/source.sha256"
+            else
+              printf 'MISSING  %s\n' "$path" >> "$EVIDENCE_DIR/source.sha256"
+            fi
+          done
+          find "$EVIDENCE_DIR" -maxdepth 1 -type f ! -name SHA256SUMS -print0 \
+            | sort -z | xargs -0 sha256sum > "$EVIDENCE_DIR/SHA256SUMS"
+
+      - name: Upload parity evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: portable-contract-${{ env.SUBMITTED_SHA }}
+          path: ${{ env.EVIDENCE_DIR }}
+          if-no-files-found: error
+          retention-days: 90

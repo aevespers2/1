@@ -1,0 +1,97 @@
+{
+  "profile_id": "portable-security-contract-v0.semantic-profile",
+  "profile_version": "0.1.0",
+  "status": "proposed-documentation-only",
+  "route": [
+    "Repository 0 local working state",
+    "non-authoritative local proposal",
+    "signed/versioned proposal envelope",
+    "Repository 1 quarantine",
+    "validation and authority decision",
+    "optional narrow capability",
+    "Repository 0 bounded execution",
+    "execution/resulting-state receipt",
+    "Repository 1 reconciliation"
+  ],
+  "roles": {
+    "repository_0": [
+      "observation",
+      "local-proposal",
+      "bounded-execution",
+      "evidence-production",
+      "approved-local-rollback"
+    ],
+    "repository_1": [
+      "quarantine",
+      "identity-policy-validation",
+      "baseline-lifecycle",
+      "capability-decision",
+      "receipt-reconciliation",
+      "checkpoint-revocation-recovery"
+    ]
+  },
+  "message_types": [
+    "inventory",
+    "proposal",
+    "decision",
+    "capability",
+    "receipt",
+    "revocation",
+    "checkpoint",
+    "correction"
+  ],
+  "required_identifiers": [
+    "contract_version",
+    "message_type",
+    "message_id",
+    "correlation_id",
+    "device_id",
+    "environment_id",
+    "owner_scope",
+    "platform_profile_id",
+    "baseline_id",
+    "policy_id",
+    "producer_id",
+    "created_at",
+    "expires_at",
+    "nonce",
+    "expected_head",
+    "content_digest",
+    "evidence_refs"
+  ],
+  "result_states": [
+    "PASS",
+    "FAIL",
+    "UNKNOWN",
+    "NOT_APPLICABLE"
+  ],
+  "fixture_descriptions": [
+    "valid inventory and proposal",
+    "malformed schema",
+    "unsupported contract version",
+    "stale timestamp and expired proposal",
+    "duplicate nonce and replayed message",
+    "wrong `device_id` or `environment_id`",
+    "wrong baseline or policy identity",
+    "expected-head mismatch",
+    "missing or mismatched evidence digest",
+    "overbroad operation/resource scope",
+    "capability expiry before execution",
+    "capability revocation during execution",
+    "partial execution with successful rollback",
+    "partial execution with failed rollback and freeze",
+    "successful command but unacceptable resulting state",
+    "`UNKNOWN` control preserved end to end",
+    "lost-device revocation and replacement-device enrollment",
+    "correction and supersession without history loss"
+  ],
+  "document_requirements": [
+    "`0:proposal` is local staging only. It is not canonical state, approval, or authority.",
+    "`UNKNOWN` must never be collapsed into `PASS`.",
+    "A capability cannot mint, widen, renew, or delegate itself.",
+    "A successful process exit is not enough to accept the resulting state.",
+    "There is no automatic unlock.",
+    "corrections create new records linked to the superseded record rather than silently rewriting history.",
+    "Unsupported versions fail closed."
+  ]
+}
