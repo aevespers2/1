@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: documentation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: false
 
 jobs:
   validate:
@@ -40,7 +40,9 @@ jobs:
 
       - name: Record exact-head evidence
         if: always()
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p evidence/documentation
           printf '%s\n' "${{ github.event.pull_request.head.sha || github.sha }}" > evidence/documentation/exact-head.txt
           python --version > evidence/documentation/python-version.txt 2>&1
