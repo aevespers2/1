@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "validate_portable_contract_profile.py"
 PROFILE = ROOT / "contracts" / "portable-security-contract-v0.profile.json"
+WORKFLOW = ROOT / ".github" / "workflows" / "portable-contract-parity.yml"
 DOCUMENT_CANDIDATES = (
     ROOT / "docs" / "portable-security-contract-v0.md",
     ROOT / "docs" / "PORTABLE_SECURITY_CONTRACT_V0.md",
@@ -88,6 +89,22 @@ class PortableContractProfileTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("missing-route-text", result.stdout)
         self.assertIn("missing-document-requirement", result.stdout)
+
+    def test_workflow_preserves_every_exact_head(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn(
+            "group: ${{ github.workflow }}-${{ github.event.pull_request.head.sha || github.sha }}",
+            text,
+        )
+        self.assertIn("cancel-in-progress: false", text)
+        self.assertNotIn(
+            "github.event.pull_request.number || github.ref",
+            text,
+        )
+        self.assertNotIn("cancel-in-progress: true", text)
+        self.assertIn("persist-credentials: false", text)
+        self.assertIn("if: always()", text)
+        self.assertIn("actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02", text)
 
 
 if __name__ == "__main__":
